@@ -49,7 +49,7 @@
 //  Define the various stepper configuration items below if the defaults don't suit
 // 
 //  The direction the stepper turns when homing, CLOCKWISE or COUNTER_CLOCKWISE.
-#define STEPPER_DEFAULT_DIRECTION CLOCKWISE
+#define STEPPER_DIRECTION CLOCKWISE
 //  Disable the stepper controller when idling, comment out to leave on. Note that this
 //  is handy to prevent controllers overheating, so this is a recommended setting.
 #define DISABLE_OUTPUTS_IDLE

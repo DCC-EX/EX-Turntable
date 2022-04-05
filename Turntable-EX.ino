@@ -17,11 +17,17 @@
  *  along with Turntable-EX.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// Include required libraries.
 #include <Arduino.h>
 #include <Wire.h>
+#include <AccelStepper.h>
+
+// Include standard stepper definitions, version history, and position definitions.
 #include "standard_steppers.h"
 #include "version.h"
+#include "positions.h"
 
+// If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
 #else
@@ -29,10 +35,35 @@
   #include "config.example.h"
 #endif
 
-// Define global variables here
+// Define global variables here.
 uint8_t lastPosition;           // Holds the last position we moved to.
 bool lastRunningState;          // Stores last running state to allow turning the stepper off after moves.
 
+// Create our struct for the position definitions.
+typedef struct 
+{
+  uint16_t positionSteps;
+  uint8_t phaseSwitch;
+}
+turntablePosition;
+turntablePosition turntablePositions[NUM_POSITIONS];
+
+// Setup our stepper object based on the standard definitions.
+#if STEPPER_CONTROLLER == ULN2003
+
+#if STEPPER_DIRECTION == CLOCKWISE
+AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN4, ULN2003_PIN2, ULN2003_PIN3, ULN2003_PIN1);
+#elif STEPPER_DIRECTION == COUNTER_CLOCKWISE
+AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN1, ULN2003_PIN3, ULN2003_PIN2, ULN2003_PIN4);
+#endif
+
+#elif STEPPER_CONTROLLER == A4988
+
+#elif STEPPER_CONTROLLER == DRV8825
+
+#elif STEPPER_CONTROLLER == TMC2208
+
+#endif
 
 void displayStepperConfig() {
 
@@ -42,17 +73,20 @@ void displayPositions() {
 
 }
 
+// Function to define the stepper parameters.
 void setupStepperDriver() {
-
+  stepper.setMaxSpeed(STEPPER_MAX_SPEED);
+  stepper.setAcceleration(STEPPER_ACCELERATION);
+  stepper.setSpeed(STEPPER_SPEED);
 }
 
 bool moveHome() {
 #if HOME_SENSOR_ACTIVE_STATE == LOW
-  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP)
+  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
-  pinMode(HOME_SENSOR_PIN, INPUT)
+  pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
-  stepper.move(fullSteps * 2);
+  stepper.move(FULLSTEPS * 2);
   while(digitalRead(HOME_SENSOR_PIN) != HOME_SENSOR_ACTIVE_STATE) {
     stepper.run();
   }
@@ -80,9 +114,6 @@ void setup() {
   Serial.print("Turntable-EX version ");
   Serial.println(VERSION);
 
-// If we're switching phases, setup the relay pins
-
-
 // Display the configured stepper details
   displayStepperConfig();
 
@@ -97,6 +128,8 @@ void setup() {
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
 #endif
+  } else {
+    Serial.println("ERROR: Cannot find home position, check homing sensor.");
   }
 }
 

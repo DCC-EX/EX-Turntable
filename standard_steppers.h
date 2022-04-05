@@ -1,4 +1,8 @@
-
+/*
+ *  © 2022 Peter Cole
+ *
+ *  These are the standard stepper controller and motor definitions.
+*/
 
 #ifndef STANDARD_STEPPERS_h
 #define STANDARD_STEPPERS_h
