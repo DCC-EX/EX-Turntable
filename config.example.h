@@ -31,6 +31,21 @@
 #define STEPPER_CONTROLLER ULN2003
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  Define the stepper motor in use according to those available:
+// 
+//  ULN2003   : Commonly paired with the 28BYJ-48 unipolar stepper motor (Default)
+//  NEMA17    : 
+//  NEMA23    :
+//  Other?    :
+// 
+//  NOTE: If you are using a different controller than those already defined, refer to
+//  the documentation to define the appropriate configuration variables. Note there are
+//  some controllers that are pin-compatible with an existing defined controller, and
+//  in those instances, no custom configuration would be required.
+// 
+#define STEPPER_MOTOR ULN2003
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
 // 
 //  The direction the stepper turns when homing, CLOCKWISE or COUNTER_CLOCKWISE.

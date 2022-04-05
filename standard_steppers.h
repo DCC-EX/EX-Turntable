@@ -26,4 +26,10 @@
 
 #endif
 
+#if STEPPER_MOTOR == ULN2003COMBO
+
+#define FULLSTEPS 2048
+
+#endif
+
 #endif
