@@ -8,3 +8,5 @@ Release/*
 .vscode/
 config.h
 .vscode/*
+
+config.h
