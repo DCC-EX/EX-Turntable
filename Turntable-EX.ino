@@ -36,15 +36,16 @@
 #endif
 
 // Define global variables here.
-uint8_t lastPosition;           // Holds the last position we moved to.
-bool lastRunningState;          // Stores last running state to allow turning the stepper off after moves.
-uint16_t halfTurnSteps = FULLSTEPS / 2; // Defines a half turn to enable moving the least distance.
-uint16_t lastStep = 0;          // Holds the last step value we moved to.
+uint8_t lastPosition;                               // Holds the last position we moved to.
+bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
+const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
+const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
+int16_t lastStep = 0;                               // Holds the last step value we moved to.
 
 // Create our struct for the position definitions.
 typedef struct 
 {
-  uint16_t positionSteps;
+  int16_t positionSteps;
   uint8_t phaseSwitch;
 }
 turntablePosition;
@@ -83,7 +84,7 @@ void displayStepperConfig() {
   // Serial.println(STEPPER_CONTROLLER);
   // Serial.println(STEPPER_MOTOR);
   Serial.print("Stepper motor configured for ");
-  Serial.print(FULLSTEPS);
+  Serial.print(fullTurnSteps);
   Serial.println(" steps");
 }
 
@@ -116,13 +117,14 @@ bool moveHome() {
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
   pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
-  stepper.move(FULLSTEPS * 2);
+  stepper.move(fullTurnSteps * 2);
   while(digitalRead(HOME_SENSOR_PIN) != HOME_SENSOR_ACTIVE_STATE) {
     stepper.run();
   }
   if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
     stepper.setCurrentPosition(0);
+    lastPosition = 0;
     lastStep = 0;
     return true;
   } else {
@@ -135,27 +137,27 @@ void receiveEvent(int position) {
   while(Wire.available()) {
     Wire.read();
   }
-  Serial.print("Received notification to move to postion ");
-  Serial.println(position);
   moveToPosition(position);
 }
 
 // Function to move to the indicated position.
 void moveToPosition(int position) {
   if (position != lastPosition && position <= NUM_POSITIONS) {
+    Serial.print("Received notification to move to postion ");
+    Serial.println(position);
     if (position == 0) {
       moveHome();
     } else {
       int positionIndex = position - 1;     // Our array index will be one less than the position.
-      uint16_t steps = turntablePositions[positionIndex].positionSteps;
+      int16_t steps = turntablePositions[positionIndex].positionSteps;
       uint8_t phaseSwitch = turntablePositions[positionIndex].phaseSwitch;
-      if (steps <= FULLSTEPS && phaseSwitch < 2) {
+      if (steps <= fullTurnSteps && phaseSwitch < 2) {
         int16_t moveSteps;
         Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
         if ((steps - lastStep) > halfTurnSteps) {
-          moveSteps = steps - FULLSTEPS - lastStep;
+          moveSteps = steps - fullTurnSteps - lastStep;
         } else if ((steps - lastStep) < -halfTurnSteps) {
-          moveSteps = FULLSTEPS - lastStep + steps;
+          moveSteps = fullTurnSteps - lastStep + steps;
         } else {
           moveSteps = steps - lastStep;
         }
@@ -163,6 +165,7 @@ void moveToPosition(int position) {
 #if defined(PHASE_SWITCH)
         setPhase(phaseSwitch);
 #endif
+        lastPosition = positionIndex;
         lastStep = steps;
         stepper.move(moveSteps);
       }
