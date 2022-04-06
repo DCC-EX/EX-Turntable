@@ -199,13 +199,15 @@ void setup() {
   setupStepperDriver();
 
 // Home the stepper ready for action
+  Serial.println("Homing...");
   if(moveHome()) {
-#if defined(DISABLE_OUTPUTS_IDLE)
-    stepper.disableOutputs();
-#endif
+    Serial.println("Homed successfully");
   } else {
     Serial.println("ERROR: Cannot find home position, check homing sensor.");
   }
+#if defined(DISABLE_OUTPUTS_IDLE)
+    stepper.disableOutputs();
+#endif
 
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
