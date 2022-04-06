@@ -126,17 +126,31 @@ bool moveHome() {
     stepper.setCurrentPosition(0);
     lastPosition = 0;
     lastStep = 0;
+#if defined(DEBUG)
+    Serial.println("DEBUG: Home found, returning true");
+#endif
     return true;
   } else {
+#if defined(DEBUG)
+    Serial.println("DEBUG: ERROR home not found, returning false");
+#endif
     return false;
   }
 }
 
 // Function to define the action on a received I2C event.
-void receiveEvent(int position) {
+void receiveEvent(int received) {
+#if defined(DEBUG)
+  Serial.print("DEBUG: Received I2C event to move to position: ");
+#endif
+  int position = 0;
   while(Wire.available()) {
     Wire.read();
+    position++;
   }
+#if defined(DEBUG)
+  Serial.println(position);
+#endif
   moveToPosition(position);
 }
 
@@ -165,12 +179,18 @@ void moveToPosition(int position) {
 #if defined(PHASE_SWITCH)
         setPhase(phaseSwitch);
 #endif
-        lastPosition = positionIndex;
+        lastPosition = position;
         lastStep = steps;
         stepper.move(moveSteps);
       }
     }
   }
+#if defined(DEBUG)
+  Serial.print("DEBUG: Stored values for lastPosition/lastStep: ");
+  Serial.print(lastPosition);
+  Serial.print("/");
+  Serial.println(lastStep);
+#endif
 }
 
 // If phase switching is enabled, function to set it.
@@ -178,6 +198,12 @@ void moveToPosition(int position) {
 void setPhase(uint8_t phase) {
   pinMode(RELAY1_PIN, OUTPUT);
   pinMode(RELAY2_PIN, OUTPUT);
+#if defined(DEBUG)
+  Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
+  Serial.println(phase);
+#endif
+  digitalWrite(RELAY1_PIN, phase);
+  digitalWrite(RELAY2_PIN, phase);
 }
 #endif
 
