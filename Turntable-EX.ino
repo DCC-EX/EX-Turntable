@@ -145,11 +145,15 @@ void receiveEvent(int received) {
 #endif
   int position = 0;
   while(Wire.available()) {
-    Wire.read();
-    position++;
+    position = Wire.read();
   }
 #if defined(DEBUG)
   Serial.println(position);
+  if (received > 1) {
+    Serial.print("DEBUG: Received ");
+    Serial.print(received);
+    Serial.println(" bytes");
+  }
 #endif
   moveToPosition(position);
 }
