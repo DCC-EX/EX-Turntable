@@ -141,21 +141,23 @@ bool moveHome() {
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
 #if defined(DEBUG)
-  Serial.print("DEBUG: Received I2C event to move to position: ");
+  Serial.print("DEBUG: Received  ");
+  Serial.print(received);
+  Serial.println(" bytes:");
 #endif
-  int position = 0;
-  while(Wire.available()) {
-    position = Wire.read();
+  if (received == 3) {
+    for (int b = 0; b < received; b++) {
+      
+    }
   }
-#if defined(DEBUG)
-  Serial.println(position);
-  if (received > 1) {
-    Serial.print("DEBUG: Received ");
-    Serial.print(received);
-    Serial.println(" bytes");
+//   int position = 0;
+//   while(Wire.available()) {
+//     position = Wire.read();
+// #if defined(DEBUG)
+//     Serial.println(position);
+// #endif
   }
-#endif
-  moveToPosition(position);
+  // moveToPosition(position);
 }
 
 // Function to move to the indicated position.
