@@ -143,21 +143,38 @@ void receiveEvent(int received) {
 #if defined(DEBUG)
   Serial.print("DEBUG: Received  ");
   Serial.print(received);
-  Serial.println(" bytes:");
+  Serial.println(" bytes");
 #endif
+  int16_t steps;
+  bool phaseSwitch;
   if (received == 3) {
-    for (int b = 0; b < received; b++) {
-      
+    int8_t stepsMSB = Wire.read();
+    int8_t stepsLSB = Wire.read();
+    phaseSwitch = Wire.read();
+    steps = stepsMSB << 8 + stepsLSB;
+#if defined(DEBUG)
+    Serial.print("DEBUG: Received ");
+    Serial.print(steps);
+    Serial.print(" steps, with phase switch flag ");
+    Serial.println(phaseSwitch);
+    if (steps <= fullTurnSteps) {
+      // moveToPosition(steps, phaseSwitch);
+    } else {
+#if defined(DEBUG)
+      Serial.print("DEBUG: ");
+      Serial.print(steps);
+      Serial.println(" are invalid, greater than full turn steps");
+#endif
+    }
+#endif
+  } else {
+#if defined(DEBUG)
+    Serial.println("DEBUG: Incorrect number of bytes received, discarding");
+#endif
+    while (Wire.available()) {
+      Wire.read();
     }
   }
-//   int position = 0;
-//   while(Wire.available()) {
-//     position = Wire.read();
-// #if defined(DEBUG)
-//     Serial.println(position);
-// #endif
-  }
-  // moveToPosition(position);
 }
 
 // Function to move to the indicated position.
