@@ -93,10 +93,16 @@ bool moveHome() {
 #if defined(DEBUG)
     Serial.println("DEBUG: Home found, returning true");
 #endif
+#if defined(DISABLE_OUTPUTS_IDLE)
+    stepper.disableOutputs();
+#endif
     return true;
   } else {
 #if defined(DEBUG)
     Serial.println("DEBUG: ERROR home not found, returning false");
+#endif
+#if defined(DISABLE_OUTPUTS_IDLE)
+    stepper.disableOutputs();
 #endif
     return false;
   }
@@ -132,11 +138,17 @@ void receiveEvent(int received) {
       Serial.println(activity);
 #endif
       moveToPosition(steps, activity);
+    } else if (activity == 2) {
+#if defined(DEBUG)
+      Serial.println("DEBUG: Requested to home");
+#endif
+      moveHome();
     } else {
 #if defined(DEBUG)
-      Serial.print("DEBUG: ");
+      Serial.print("DEBUG: Invalid step count or activity provided: ");
       Serial.print(steps);
-      Serial.println(" steps is invalid, greater than full turn steps");
+      Serial.print(" steps, activity: ");
+      Serial.println(activity);
 #endif
     }
   } else {
@@ -154,27 +166,23 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
     Serial.print("Received notification to move to step postion ");
     Serial.println(steps);
-    if (steps == 0 && phaseSwitch == 0) {
-      moveHome();
-    } else {
-        int16_t moveSteps;
-        Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
-        if ((steps - lastStep) > halfTurnSteps) {
-          moveSteps = steps - fullTurnSteps - lastStep;
-        } else if ((steps - lastStep) < -halfTurnSteps) {
-          moveSteps = fullTurnSteps - lastStep + steps;
-        } else {
-          moveSteps = steps - lastStep;
-        }
-        Serial.println((String)" - moving " + moveSteps + " steps");
+      int16_t moveSteps;
+      Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
+      if ((steps - lastStep) > halfTurnSteps) {
+        moveSteps = steps - fullTurnSteps - lastStep;
+      } else if ((steps - lastStep) < -halfTurnSteps) {
+        moveSteps = fullTurnSteps - lastStep + steps;
+      } else {
+        moveSteps = steps - lastStep;
+      }
+      Serial.println((String)" - moving " + moveSteps + " steps");
 #if defined(PHASE_SWITCH)
-        Serial.print("Setting phase switch flag to: ");
-        Serial.println(phaseSwitch);
-        setPhase(phaseSwitch);
+      Serial.print("Setting phase switch flag to: ");
+      Serial.println(phaseSwitch);
+      setPhase(phaseSwitch);
 #endif
-        lastStep = steps;
-        stepper.move(moveSteps);
-    }
+      lastStep = steps;
+      stepper.move(moveSteps);
   }
 #if defined(DEBUG)
   Serial.print("DEBUG: Stored values for lastStep: ");
@@ -217,9 +225,6 @@ void setup() {
   } else {
     Serial.println("ERROR: Cannot find home position, check homing sensor.");
   }
-#if defined(DISABLE_OUTPUTS_IDLE)
-    stepper.disableOutputs();
-#endif
 
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
