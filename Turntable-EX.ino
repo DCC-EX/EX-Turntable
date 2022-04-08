@@ -36,30 +36,10 @@
 #endif
 
 // Define global variables here.
-// uint8_t lastPosition;                               // Holds the last position we moved to.
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
 int16_t lastStep = 0;                               // Holds the last step value we moved to.
-
-// // Create our struct for the position definitions.
-// typedef struct 
-// {
-//   int16_t positionSteps;
-//   uint8_t phaseSwitch;
-// }
-// turntablePosition;
-// turntablePosition turntablePositions[NUM_POSITIONS];
-
-// // This array contains the Turnout Positions which can have lines added/removed to suit your turntable.
-// // Positions are defined with a step value (distance from home) and a phase switch flag: 0 no change, 1 reverse.
-// void initPositions() {
-//   turntablePositions[0] = (turntablePosition) {20, 0};
-//   turntablePositions[1] = (turntablePosition) {150, 0};
-//   turntablePositions[2] = (turntablePosition) {600, 0};
-//   turntablePositions[3] = (turntablePosition) {1200, 1};
-//   turntablePositions[4] = (turntablePosition) {2000, 1};
-// }
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -88,20 +68,6 @@ void displayStepperConfig() {
   Serial.println(" steps");
 }
 
-// // Function to display our defined positions in the serial console.
-// void displayPositions() {
-//   Serial.print(NUM_POSITIONS);
-//   Serial.println(" turntable positions defined:");
-//   for (uint8_t i = 0; i < NUM_POSITIONS; i++) {
-//     Serial.print("Position ");
-//     Serial.print(i + 1);
-//     Serial.print(": ");
-//     Serial.print(turntablePositions[i].positionSteps);
-//     Serial.print(" steps, phase switch: ");
-//     Serial.println(turntablePositions[i].phaseSwitch);
-//   }
-// }
-
 // Function to define the stepper parameters.
 void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
@@ -124,7 +90,6 @@ bool moveHome() {
   if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
     stepper.setCurrentPosition(0);
-    // lastPosition = 0;
     lastStep = 0;
 #if defined(DEBUG)
     Serial.println("DEBUG: Home found, returning true");
@@ -141,22 +106,25 @@ bool moveHome() {
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
 #if defined(DEBUG)
-  Serial.print("DEBUG: Received  ");
+  Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
 #endif
   int16_t steps;
   uint8_t activity;
   if (received == 3) {
-    int8_t stepsMSB = Wire.read();
-    int8_t stepsLSB = Wire.read();
+    uint8_t stepsMSB = Wire.read();
+    uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
-    steps = (stepsMSB << 8) + stepsLSB;
 #if defined(DEBUG)
-    Serial.print("DEBUG: Received ");
-    Serial.print(steps);
-    Serial.print(" steps, with activity flag ");
+    Serial.print("DEBUG: stepsMSB:");
+    Serial.print(stepsMSB);
+    Serial.print(", stepsLSB:");
+    Serial.print(stepsLSB);
+    Serial.print(", activity:");
     Serial.println(activity);
+#endif
+    steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2) {
 #if defined(DEBUG)
       Serial.print("DEBUG: Requested valid step move to: ");
@@ -169,10 +137,9 @@ void receiveEvent(int received) {
 #if defined(DEBUG)
       Serial.print("DEBUG: ");
       Serial.print(steps);
-      Serial.println(" are invalid, greater than full turn steps");
+      Serial.println(" steps is invalid, greater than full turn steps");
 #endif
     }
-#endif
   } else {
 #if defined(DEBUG)
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
@@ -185,17 +152,12 @@ void receiveEvent(int received) {
 
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
-  // if (position != lastPosition && position <= NUM_POSITIONS) {
   if (steps != lastStep) {
-    Serial.print("Received notification to move to postion ");
+    Serial.print("Received notification to move to step postion ");
     Serial.println(steps);
     if (steps == 0 && phaseSwitch == 0) {
       moveHome();
     } else {
-      // int positionIndex = position - 1;     // Our array index will be one less than the position.
-      // int16_t steps = turntablePositions[positionIndex].positionSteps;
-      // uint8_t phaseSwitch = turntablePositions[positionIndex].phaseSwitch;
-      // if (steps <= fullTurnSteps && phaseSwitch < 2) {
         int16_t moveSteps;
         Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
         if ((steps - lastStep) > halfTurnSteps) {
@@ -207,12 +169,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
         }
         Serial.println((String)" - moving " + moveSteps + " steps");
 #if defined(PHASE_SWITCH)
+        Serial.print("Setting phase switch flag to: ");
+        Serial.println(phaseSwitch);
         setPhase(phaseSwitch);
 #endif
-        // lastPosition = position;
         lastStep = steps;
         stepper.move(moveSteps);
-      // }
     }
   }
 #if defined(DEBUG)
@@ -243,14 +205,8 @@ void setup() {
   Serial.print("Turntable-EX version ");
   Serial.println(VERSION);
 
-// Initialise the turntable positions.
-  // initPositions();
-
 // Display the configured stepper details
   displayStepperConfig();
-
-// Display the configured positions
-  // displayPositions();
 
 // Set up the stepper driver
   setupStepperDriver();
