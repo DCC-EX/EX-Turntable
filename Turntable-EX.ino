@@ -25,7 +25,6 @@
 // Include standard stepper definitions, version history, and position definitions.
 #include "standard_steppers.h"
 #include "version.h"
-#include "positions.h"
 
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
