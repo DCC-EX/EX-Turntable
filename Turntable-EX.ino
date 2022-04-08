@@ -39,6 +39,7 @@ bool lastRunningState;                              // Stores last running state
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
 int16_t lastStep = 0;                               // Holds the last step value we moved to.
+bool homing = false;                                // Flag to indicate if homing is in progress or not.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -76,36 +77,37 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 // Stepper will rotate up to two full circles to attempt to home.
-bool moveHome() {
+void moveHome() {
+  homing = true;
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
   pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
+#if defined(DEBUG)
+  Serial.print("DEBUG: Homing initiated, sensor active state is ");
+  Serial.println(HOME_SENSOR_ACTIVE_STATE);
+#endif
   stepper.move(fullTurnSteps * 2);
-  while(digitalRead(HOME_SENSOR_PIN) != HOME_SENSOR_ACTIVE_STATE) {
+  while(digitalRead(HOME_SENSOR_PIN) != HOME_SENSOR_ACTIVE_STATE && stepper.distanceToGo() != 0) {
     stepper.run();
   }
   if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
-    stepper.setCurrentPosition(0);
-    lastStep = 0;
 #if defined(DEBUG)
-    Serial.println("DEBUG: Home found, returning true");
+    Serial.println("DEBUG: Home found, stopping stepper");
 #endif
-#if defined(DISABLE_OUTPUTS_IDLE)
-    stepper.disableOutputs();
-#endif
-    return true;
   } else {
 #if defined(DEBUG)
-    Serial.println("DEBUG: ERROR home not found, returning false");
+    Serial.println("DEBUG: ERROR home not found, position 0 set");
 #endif
-#if defined(DISABLE_OUTPUTS_IDLE)
-    stepper.disableOutputs();
-#endif
-    return false;
   }
+#if defined(DISABLE_OUTPUTS_IDLE)
+  stepper.disableOutputs();
+#endif
+  stepper.setCurrentPosition(0);
+  lastStep = 0;
+  homing = false;
 }
 
 // Function to define the action on a received I2C event.
@@ -220,11 +222,7 @@ void setup() {
 
 // Home the stepper ready for action
   Serial.println("Homing...");
-  if(moveHome()) {
-    Serial.println("Homed successfully");
-  } else {
-    Serial.println("ERROR: Cannot find home position, check homing sensor.");
-  }
+  moveHome();
 
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
@@ -233,8 +231,10 @@ void setup() {
 }
 
 void loop() {
-// Process the stepper object.
-  stepper.run();
+// Process the stepper object if homing not in progress.
+  if (!homing) {
+    stepper.run();
+  }
 
 // If disabling on idle is enabled, disable the stepper.
 #if defined(DISABLE_OUTPUTS_IDLE)
