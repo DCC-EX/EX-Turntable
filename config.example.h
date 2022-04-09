@@ -2,6 +2,8 @@
  *  © 2022 Peter Cole
  *
  *  This is the configuration file for Turntable-EX.
+ *
+ *  To define the turntable positions, edit positions.h.
 */
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -33,17 +35,17 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the stepper motor in use according to those available:
 // 
-//  ULN2003   : Commonly paired with the 28BYJ-48 unipolar stepper motor (Default)
-//  NEMA17    : 
-//  NEMA23    :
-//  Other?    :
+//  ULN2003COMBO  : 28BYJ-48 stepper with the ULN2003 (Default)
+//  NEMA17        : 
+//  NEMA23        :
+//  Other?        :
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
 //  some controllers that are pin-compatible with an existing defined controller, and
 //  in those instances, no custom configuration would be required.
 // 
-#define STEPPER_MOTOR ULN2003
+#define STEPPER_MOTOR ULN2003COMBO
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
@@ -59,20 +61,7 @@
 #define STEPPER_SPEED 100         // Constant speed for the stepper (eg. when homing)
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  If using a dual relay board (or similar), enable phase switching of the bridge
-//  tracks.
-// 
-#define PHASE_SWITCH
-
-/////////////////////////////////////////////////////////////////////////////////////
 //  If using phase switching, define the pins in use to control the relays.
 // 
-#if defined(PHASE_SWITCH)
 #define RELAY1_PIN 3
 #define RELAY2_PIN 4
-#endif
-
-/////////////////////////////////////////////////////////////////////////////////////
-//  Enable extra debugging output.
-// 
-#define DEBUG
