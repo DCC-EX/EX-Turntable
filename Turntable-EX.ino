@@ -39,7 +39,8 @@ bool lastRunningState;                              // Stores last running state
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
 int16_t lastStep = 0;                               // Holds the last step value we moved to.
-bool homing = false;                                // Flag to indicate if homing is in progress or not.
+bool homed = false;                                 // Flag to indicate if homing has been successful or not.
+uint16_t homingSteps = 0;                           // Counter to limit how many rotations until homing fails.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -76,87 +77,62 @@ void setupStepperDriver() {
 }
 
 // Function to find the home position.
-// Stepper will rotate up to two full circles to attempt to home.
 void moveHome() {
-  homing = true;
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
   pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
-#if defined(DEBUG)
-  Serial.print("DEBUG: Homing initiated, sensor active state is ");
-  Serial.println(HOME_SENSOR_ACTIVE_STATE);
-#endif
-  stepper.move(fullTurnSteps * 2);
-  while(digitalRead(HOME_SENSOR_PIN) != HOME_SENSOR_ACTIVE_STATE && stepper.distanceToGo() != 0) {
-    stepper.run();
-  }
+  stepper.move(fullTurnSteps);
   if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
-#if defined(DEBUG)
-    Serial.println("DEBUG: Home found, stopping stepper");
-#endif
-  } else {
-#if defined(DEBUG)
-    Serial.println("DEBUG: ERROR home not found, position 0 set");
-#endif
-  }
 #if defined(DISABLE_OUTPUTS_IDLE)
-  stepper.disableOutputs();
+    stepper.disableOutputs();
 #endif
-  stepper.setCurrentPosition(0);
-  lastStep = 0;
-  homing = false;
+    stepper.setCurrentPosition(0);
+    lastStep = 0;
+    homed = true;
+    Serial.println("Turntable homed successfully");
+  }
 }
 
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
-#if defined(DEBUG)
   Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
-#endif
   int16_t steps;
   uint8_t activity;
   if (received == 3) {
     uint8_t stepsMSB = Wire.read();
     uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
-#if defined(DEBUG)
     Serial.print("DEBUG: stepsMSB:");
     Serial.print(stepsMSB);
     Serial.print(", stepsLSB:");
     Serial.print(stepsLSB);
     Serial.print(", activity:");
     Serial.println(activity);
-#endif
     steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2) {
-#if defined(DEBUG)
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
-#endif
       moveToPosition(steps, activity);
     } else if (activity == 2) {
-#if defined(DEBUG)
       Serial.println("DEBUG: Requested to home");
-#endif
-      moveHome();
+      // moveHome();
+      homed = false;
+      homingSteps = 0;
     } else {
-#if defined(DEBUG)
       Serial.print("DEBUG: Invalid step count or activity provided: ");
       Serial.print(steps);
       Serial.print(" steps, activity: ");
       Serial.println(activity);
-#endif
     }
   } else {
-#if defined(DEBUG)
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
-#endif
     while (Wire.available()) {
       Wire.read();
     }
@@ -178,33 +154,25 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
         moveSteps = steps - lastStep;
       }
       Serial.println((String)" - moving " + moveSteps + " steps");
-#if defined(PHASE_SWITCH)
       Serial.print("Setting phase switch flag to: ");
       Serial.println(phaseSwitch);
       setPhase(phaseSwitch);
-#endif
       lastStep = steps;
       stepper.move(moveSteps);
   }
-#if defined(DEBUG)
   Serial.print("DEBUG: Stored values for lastStep: ");
   Serial.println(lastStep);
-#endif
 }
 
 // If phase switching is enabled, function to set it.
-#if defined(PHASE_SWITCH)
 void setPhase(uint8_t phase) {
   pinMode(RELAY1_PIN, OUTPUT);
   pinMode(RELAY2_PIN, OUTPUT);
-#if defined(DEBUG)
   Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
   Serial.println(phase);
-#endif
   digitalWrite(RELAY1_PIN, phase);
   digitalWrite(RELAY2_PIN, phase);
 }
-#endif
 
 void setup() {
 // Basic setup, display what this is.
@@ -220,21 +188,21 @@ void setup() {
 // Set up the stepper driver
   setupStepperDriver();
 
-// Home the stepper ready for action
-  Serial.println("Homing...");
-  moveHome();
-
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
-  Serial.println("Listening for I2C events");
+  Serial.println("Homing...");
 }
 
 void loop() {
-// Process the stepper object if homing not in progress.
-  if (!homing) {
-    stepper.run();
+// If we haven't successfully homed yet, do it.
+  if (!homed) {
+    moveHome();
   }
+
+// Process the stepper object continuously.
+  stepper.run();
+
 
 // If disabling on idle is enabled, disable the stepper.
 #if defined(DISABLE_OUTPUTS_IDLE)
