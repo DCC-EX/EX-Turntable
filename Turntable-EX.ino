@@ -78,21 +78,23 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
+  if (!homed) {
 #if HOME_SENSOR_ACTIVE_STATE == LOW
-  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
+    pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
-  pinMode(HOME_SENSOR_PIN, INPUT);
+    pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
-  stepper.move(fullTurnSteps);
-  if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
-    stepper.stop();
+    stepper.move(fullTurnSteps);
+    if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
+      stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
-    stepper.disableOutputs();
+      stepper.disableOutputs();
 #endif
-    stepper.setCurrentPosition(0);
-    lastStep = 0;
-    homed = true;
-    Serial.println("Turntable homed successfully");
+      stepper.setCurrentPosition(0);
+      lastStep = 0;
+      homed = true;
+      Serial.println("Turntable homed successfully");
+    }
   }
 }
 
@@ -122,7 +124,6 @@ void receiveEvent(int received) {
       moveToPosition(steps, activity);
     } else if (activity == 2) {
       Serial.println("DEBUG: Requested to home");
-      // moveHome();
       homed = false;
       homingSteps = 0;
     } else {
@@ -141,27 +142,27 @@ void receiveEvent(int received) {
 
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
-  if (steps != lastStep) {
+  if (steps != lastStep && !stepper.isRunning()) {
     Serial.print("Received notification to move to step postion ");
     Serial.println(steps);
-      int16_t moveSteps;
-      Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
-      if ((steps - lastStep) > halfTurnSteps) {
-        moveSteps = steps - fullTurnSteps - lastStep;
-      } else if ((steps - lastStep) < -halfTurnSteps) {
-        moveSteps = fullTurnSteps - lastStep + steps;
-      } else {
-        moveSteps = steps - lastStep;
-      }
-      Serial.println((String)" - moving " + moveSteps + " steps");
-      Serial.print("Setting phase switch flag to: ");
-      Serial.println(phaseSwitch);
-      setPhase(phaseSwitch);
-      lastStep = steps;
-      stepper.move(moveSteps);
+    int16_t moveSteps;
+    Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
+    if ((steps - lastStep) > halfTurnSteps) {
+      moveSteps = steps - fullTurnSteps - lastStep;
+    } else if ((steps - lastStep) < -halfTurnSteps) {
+      moveSteps = fullTurnSteps - lastStep + steps;
+    } else {
+      moveSteps = steps - lastStep;
+    }
+    Serial.println((String)" - moving " + moveSteps + " steps");
+    Serial.print("Setting phase switch flag to: ");
+    Serial.println(phaseSwitch);
+    setPhase(phaseSwitch);
+    lastStep = steps;
+    stepper.move(moveSteps);
+    Serial.print("DEBUG: Stored values for lastStep: ");
+    Serial.println(lastStep);
   }
-  Serial.print("DEBUG: Stored values for lastStep: ");
-  Serial.println(lastStep);
 }
 
 // If phase switching is enabled, function to set it.
