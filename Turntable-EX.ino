@@ -40,7 +40,7 @@ const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full t
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
 int16_t lastStep = 0;                               // Holds the last step value we moved to.
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
-uint16_t homingSteps = 0;                           // Counter to limit how many rotations until homing fails.
+// uint16_t homingSteps = 0;                           // Counter to limit how many rotations until homing fails.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -78,23 +78,22 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  if (!homed) {
 #if HOME_SENSOR_ACTIVE_STATE == LOW
-    pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
+  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
-    pinMode(HOME_SENSOR_PIN, INPUT);
+  pinMode(HOME_SENSOR_PIN, INPUT);
 #endif
-    stepper.move(fullTurnSteps);
-    if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
-      stepper.stop();
+  if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
+    stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
-      stepper.disableOutputs();
+    stepper.disableOutputs();
 #endif
-      stepper.setCurrentPosition(0);
-      lastStep = 0;
-      homed = true;
-      Serial.println("Turntable homed successfully");
-    }
+    stepper.setCurrentPosition(0);
+    lastStep = 0;
+    homed = true;
+    Serial.println("Turntable homed successfully");
+  } else if(!stepper.isRunning()) {
+    stepper.move(fullTurnSteps * 2);
   }
 }
 
@@ -124,8 +123,10 @@ void receiveEvent(int received) {
       moveToPosition(steps, activity);
     } else if (activity == 2) {
       Serial.println("DEBUG: Requested to home");
-      homed = false;
-      homingSteps = 0;
+      if (!stepper.isRunning()) {
+        homed = false;
+        // homingSteps = 0;
+      }
     } else {
       Serial.print("DEBUG: Invalid step count or activity provided: ");
       Serial.print(steps);
@@ -133,6 +134,7 @@ void receiveEvent(int received) {
       Serial.println(activity);
     }
   } else {
+    // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
     while (Wire.available()) {
       Wire.read();
