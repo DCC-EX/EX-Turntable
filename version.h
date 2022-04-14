@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.3"
+#define VERSION "0.0.4"
 
+// 0.0.4 includes:
+//  - Improvement to homing, limiting rotations to two full turns if homing fails.
 // 0.0.3 includes:
 //  - Bug fix for two homing issues and cleaner debug output.
 //  - Also removed ability for users to enable/disable relay outputs to keep things simple.

@@ -38,9 +38,9 @@
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
-int16_t lastStep = 0;                               // Holds the last step value we moved to.
+int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
+int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
-uint16_t homingSteps = 0;                           // Counter to limit how many rotations until homing fails.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -78,22 +78,31 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  if (!homed) {
-#if HOME_SENSOR_ACTIVE_STATE == LOW
-    pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
-#elif HOME_SENSOR_ACTIVE_STATE == HIGH
-    pinMode(HOME_SENSOR_PIN, INPUT);
-#endif
-    stepper.move(fullTurnSteps);
-    if(digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
-      stepper.stop();
+  if (digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
+    stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
-      stepper.disableOutputs();
+    stepper.disableOutputs();
 #endif
+    stepper.setCurrentPosition(0);
+    lastStep = 0;
+    homed = true;
+    Serial.println("Turntable homed successfully");
+  } else if(!stepper.isRunning()) {
+    Serial.print("DEBUG: Recorded/last actual target: ");
+    Serial.print(lastTarget);
+    Serial.print("/");
+    Serial.println(stepper.targetPosition());
+    if (stepper.targetPosition() == lastTarget) {
       stepper.setCurrentPosition(0);
       lastStep = 0;
       homed = true;
-      Serial.println("Turntable homed successfully");
+      Serial.println("ERROR: Turntable failed to home, setting random home position");
+    } else {
+      stepper.move(fullTurnSteps * 2);
+      lastTarget = stepper.targetPosition();
+      Serial.print("DEBUG: lastTarget: ");
+      Serial.println(lastTarget);
+      Serial.println("Homing started");
     }
   }
 }
@@ -103,7 +112,7 @@ void receiveEvent(int received) {
   Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
-  int16_t steps;
+  int16_t steps;  
   uint8_t activity;
   if (received == 3) {
     uint8_t stepsMSB = Wire.read();
@@ -116,23 +125,24 @@ void receiveEvent(int received) {
     Serial.print(", activity:");
     Serial.println(activity);
     steps = (stepsMSB << 8) + stepsLSB;
-    if (steps <= fullTurnSteps && activity < 2) {
+    if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning()) {
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
       moveToPosition(steps, activity);
-    } else if (activity == 2) {
+    } else if (activity == 2 && !stepper.isRunning()) {
       Serial.println("DEBUG: Requested to home");
       homed = false;
-      homingSteps = 0;
+      lastTarget = fullTurnSteps * 2;
     } else {
-      Serial.print("DEBUG: Invalid step count or activity provided: ");
+      Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
       Serial.print(steps);
       Serial.print(" steps, activity: ");
       Serial.println(activity);
     }
   } else {
+    // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
     while (Wire.available()) {
       Wire.read();
@@ -142,7 +152,7 @@ void receiveEvent(int received) {
 
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
-  if (steps != lastStep && !stepper.isRunning()) {
+  if (steps != lastStep) {
     Serial.print("Received notification to move to step postion ");
     Serial.println(steps);
     int16_t moveSteps;
@@ -160,8 +170,11 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     setPhase(phaseSwitch);
     lastStep = steps;
     stepper.move(moveSteps);
-    Serial.print("DEBUG: Stored values for lastStep: ");
-    Serial.println(lastStep);
+    lastTarget = stepper.targetPosition();
+    Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
+    Serial.print(lastStep);
+    Serial.print("/");
+    Serial.println(lastTarget);
   }
 }
 
@@ -182,6 +195,13 @@ void setup() {
   Serial.println("License GPLv3 fsf.org (c) dcc-ex.com");
   Serial.print("Turntable-EX version ");
   Serial.println(VERSION);
+
+// Configure homing sensor pin
+#if HOME_SENSOR_ACTIVE_STATE == LOW
+  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
+#elif HOME_SENSOR_ACTIVE_STATE == HIGH
+  pinMode(HOME_SENSOR_PIN, INPUT);
+#endif
 
 // Display the configured stepper details
   displayStepperConfig();
