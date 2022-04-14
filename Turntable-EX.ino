@@ -38,7 +38,8 @@
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
 const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
-int16_t lastStep = 0;                               // Holds the last step value we moved to.
+int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
+int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
 
 // Setup our stepper object based on the standard definitions.
@@ -87,7 +88,22 @@ void moveHome() {
     homed = true;
     Serial.println("Turntable homed successfully");
   } else if(!stepper.isRunning()) {
-    stepper.move(fullTurnSteps * 2);
+    Serial.print("DEBUG: Recorded/last actual target: ");
+    Serial.print(lastTarget);
+    Serial.print("/");
+    Serial.println(stepper.targetPosition());
+    if (stepper.targetPosition() == lastTarget) {
+      stepper.setCurrentPosition(0);
+      lastStep = 0;
+      homed = true;
+      Serial.println("ERROR: Turntable failed to home, setting random home position");
+    } else {
+      stepper.move(fullTurnSteps * 2);
+      lastTarget = stepper.targetPosition();
+      Serial.print("DEBUG: lastTarget: ");
+      Serial.println(lastTarget);
+      Serial.println("Homing started");
+    }
   }
 }
 
@@ -96,7 +112,7 @@ void receiveEvent(int received) {
   Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
-  int16_t steps;
+  int16_t steps;  
   uint8_t activity;
   if (received == 3) {
     uint8_t stepsMSB = Wire.read();
@@ -118,8 +134,9 @@ void receiveEvent(int received) {
     } else if (activity == 2 && !stepper.isRunning()) {
       Serial.println("DEBUG: Requested to home");
       homed = false;
+      lastTarget = fullTurnSteps * 2;
     } else {
-      Serial.print("DEBUG: Invalid step count or activity provided: ");
+      Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
       Serial.print(steps);
       Serial.print(" steps, activity: ");
       Serial.println(activity);
@@ -153,8 +170,11 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     setPhase(phaseSwitch);
     lastStep = steps;
     stepper.move(moveSteps);
-    Serial.print("DEBUG: Stored values for lastStep: ");
-    Serial.println(lastStep);
+    lastTarget = stepper.targetPosition();
+    Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
+    Serial.print(lastStep);
+    Serial.print("/");
+    Serial.println(lastTarget);
   }
 }
 
