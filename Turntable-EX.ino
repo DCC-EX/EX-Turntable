@@ -41,6 +41,9 @@ const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to en
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
 int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
+const uint8_t homeSensorPin = 2;                    // Define pin 2 for the home sensor.
+const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
+const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -78,7 +81,7 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  if (digitalRead(HOME_SENSOR_PIN) == HOME_SENSOR_ACTIVE_STATE) {
+  if (digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
@@ -196,12 +199,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
 
 // If phase switching is enabled, function to set it.
 void setPhase(uint8_t phase) {
-  pinMode(RELAY1_PIN, OUTPUT);
-  pinMode(RELAY2_PIN, OUTPUT);
+  pinMode(relay1Pin, OUTPUT);
+  pinMode(relay2Pin, OUTPUT);
   Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
   Serial.println(phase);
-  digitalWrite(RELAY1_PIN, phase);
-  digitalWrite(RELAY2_PIN, phase);
+  digitalWrite(relay1Pin, phase);
+  digitalWrite(relay2Pin, phase);
 }
 
 void setup() {
@@ -214,9 +217,9 @@ void setup() {
 
 // Configure homing sensor pin
 #if HOME_SENSOR_ACTIVE_STATE == LOW
-  pinMode(HOME_SENSOR_PIN, INPUT_PULLUP);
+  pinMode(homeSensorPin, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
-  pinMode(HOME_SENSOR_PIN, INPUT);
+  pinMode(homeSensorPin, INPUT);
 #endif
 
 // Display the configured stepper details

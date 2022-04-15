@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.5"
+#define VERSION "0.0.6"
 
+// 0.0.6 includes:
+//  - Move to statically defined home sensor and relay pins.
 // 0.0.5 includes:
 //  - Returns status to the TurntableEX.h device driver when requested.
 // 0.0.4 includes:

@@ -2,9 +2,7 @@
  *  © 2022 Peter Cole
  *
  *  This is the configuration file for Turntable-EX.
- *
- *  To define the turntable positions, edit positions.h.
-*/
+ */
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define a valid (and free) I2C address, 0x60 is the default.
@@ -12,9 +10,10 @@
 #define I2C_ADDRESS 0x60
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  Define the pin that the home sensor is connected to, and if it is active low or high.
+//  Define the active state for the homing sensor.
+//  LOW = When activated, the input is pulled down (ground or 0V).
+//  HIGH = When activated, the input is pulled up (typically 5V).
 // 
-#define HOME_SENSOR_PIN 2
 #define HOME_SENSOR_ACTIVE_STATE LOW
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -59,9 +58,3 @@
 #define STEPPER_MAX_SPEED 100     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
 #define STEPPER_SPEED 100         // Constant speed for the stepper (eg. when homing)
-
-/////////////////////////////////////////////////////////////////////////////////////
-//  If using phase switching, define the pins in use to control the relays.
-// 
-#define RELAY1_PIN 3
-#define RELAY2_PIN 4
