@@ -150,6 +150,22 @@ void receiveEvent(int received) {
   }
 }
 
+// Function to return the stepper status when requested by the IO_TurntableEX.h device driver.
+// 0 = Finished moving to the correct position.
+// 1 = Still moving.
+// 2 = Finished moving, but in an incorrect position.
+void requestEvent() {
+  uint8_t stepperStatus;
+  if (stepper.isRunning()) {
+    stepperStatus = 1;
+  } else if ((lastStep = stepper.targetPosition()) && !stepper.isRunning()) {
+    stepperStatus = 0;
+  } else {
+    stepperStatus = 2;
+  }
+  Wire.write(stepperStatus);
+}
+
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
@@ -212,6 +228,7 @@ void setup() {
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
   Serial.println("Homing...");
 }
 
