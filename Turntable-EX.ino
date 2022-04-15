@@ -150,6 +150,15 @@ void receiveEvent(int received) {
   }
 }
 
+// Function to return the stepper status when requested by the IO_TurntableEX.h device driver.
+void requestEvent() {
+  if (stepper.isRunning()) {
+    Wire.write(1);
+  } else {
+    Wire.write(0);
+  }
+}
+
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
@@ -212,6 +221,7 @@ void setup() {
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
   Serial.println("Homing...");
 }
 
