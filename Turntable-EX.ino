@@ -151,12 +151,19 @@ void receiveEvent(int received) {
 }
 
 // Function to return the stepper status when requested by the IO_TurntableEX.h device driver.
+// 0 = Finished moving to the correct position.
+// 1 = Still moving.
+// 2 = Finished moving, but in an incorrect position.
 void requestEvent() {
+  uint8_t stepperStatus;
   if (stepper.isRunning()) {
-    Wire.write(1);
+    stepperStatus = 1;
+  } else if ((lastStep = stepper.targetPosition()) && !stepper.isRunning()) {
+    stepperStatus = 0;
   } else {
-    Wire.write(0);
+    stepperStatus = 2;
   }
+  Wire.write(stepperStatus);
 }
 
 // Function to move to the indicated position.
