@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.4"
+#define VERSION "0.0.5"
 
+// 0.0.5 includes:
+//  - Returns status to the TurntableEX.h device driver when requested.
 // 0.0.4 includes:
 //  - Improvement to homing, limiting rotations to two full turns if homing fails.
 // 0.0.3 includes:
