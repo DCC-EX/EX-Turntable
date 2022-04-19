@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.6"
+#define VERSION "0.0.7"
 
+// 0.0.7 includes:
+//  - Revise return status to 0 (stopped) or 1 (moving) only, return status of 2 unused and causing issues with EX-RAIL RESERVE/FREE.
 // 0.0.6 includes:
 //  - Move to statically defined home sensor and relay pins.
 // 0.0.5 includes:
