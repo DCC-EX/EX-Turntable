@@ -161,10 +161,8 @@ void requestEvent() {
   uint8_t stepperStatus;
   if (stepper.isRunning()) {
     stepperStatus = 1;
-  } else if ((lastStep = stepper.targetPosition()) && !stepper.isRunning()) {
+  } else  {
     stepperStatus = 0;
-  } else {
-    stepperStatus = 2;
   }
   Wire.write(stepperStatus);
 }
