@@ -79,36 +79,80 @@ To control the turntable via EX-RAIL, the MOVETT command has been added.
 MOVETT(vpin, steps, activity)
 ```
 
-Like other commands in EX-RAIL, to make these visible in Engine Driver and WiThrottle apps, define a ROUTE:
+There are currently three valid activity flags, and for the diagnostic commands, these are numerical, whereas for MOVETT() these are text:
+
+Diagnostic Activity | MOVETT() Activity | Action
+--------------------|------------------|------
+0 | Turn | Turn to the desired step positions
+1 | Turn_PInvert | Turn to the desired step position and invert the phase/polarity
+2 | Home | Activate the homing process, ignore the provided step position
+
+The two commands below are equivalent to turn to step position 100, and invert the phase/polarity:
 
 ```
-ROUTE(1, "Demo ROUTE")
-  MOVETT(600, 100, 0)
-  DONE
-
-ROUTE(2, "Demo ROUTE with phase switch")
-  MOVETT(600, 200, 1)
-  DONE
-
-ROUTE(3, "Demo homing")
-  MOVETT(600, 0, 2)
-  DONE
+<D TT 600 100 1>
+MOVETT(600, 100, Turn_PInvert)
 ```
 
-There are currently three valid activity flags:
+# Advertising the turntable to throttles
 
-Activity ID | Action
-------------|-------
-0 | No activity, just rotate the turntable
-1 | Rotate the turntable, and activate both relays to switch phase/polarity
-2 | Triggers the turntable to home (ignores the provided steps value)
+The recommended way to implement the turntable positions is to define a custom TURNTABLE_EX() macro that includes both the MOVETT() command with RESERVE()/FREE() and WAITFOR() commands to ensure nothing is able to interfere with the turntable until after movements have completed.
+
+There will be a sample myTurntable-EX.h_example.txt file for users to copy and customise to suit their layout.
+
+```
+// For Conductor level users who wish to just use Turntable-EX, you don't need to understand this
+// and can move to defining the turntable positions below. You must, however, ensure this remains
+// before any position definitions or you will get compile errors when uploading.
+//
+// Definition of the TURNTABLE_EX macro to correctly create the ROUTEs required for each position.
+// This includes RESERVE()/FREE() to protect any automation activities.
+//
+#define TURNTABLE_EX(route_id, reserve_id, vpin, steps, activity, desc) \
+  ROUTE(route_id, desc) \
+    RESERVE(reserve_id) \
+    MOVETT(vpin, steps, activit) \
+    WAITFOR(vpin) \
+    FREE(reserve_id) \
+    DONE
+
+// Define your turntable positions here:
+//
+// TURNTABLE_EX(route_id, reserve_id, vpin, steps, activity, desc)
+//
+// route_id = A unique number for each defined route, the route is what appears in throttles
+// reserve_id = A unique reservation number (0 - 255) to ensure nothing interferes with automation
+// vpin = The Vpin defined for the Turntable-EX device driver, default is 600
+// steps = The target step position
+// activity = The activity performed for this ROUTE (Note do not enclose in quotes "")
+// desc = Description that will appear in throttles (Must use quotes "")
+//
+TURNTABLE_EX(TTRoute1, Turntable, 600, 56, Turn, "Position 1")
+TURNTABLE_EX(TTRoute2, Turntable, 600, 111, Turn, "Position 2")
+TURNTABLE_EX(TTRoute3, Turntable, 600, 167, Turn, "Position 3")
+TURNTABLE_EX(TTRoute4, Turntable, 600, 1056, Turn_PInvert, "Position 4")
+TURNTABLE_EX(TTRoute5, Turntable, 600, 1111, Turn_PInvert, "Position 5")
+TURNTABLE_EX(TTRoute6, Turntable, 600, 1167, Turn_PInvert, "Position 6")
+TURNTABLE_EX(TTRoute7, Turntable, 600, 0, Home, "Home turntable")
+
+// Pre-defined aliases to ensure unique IDs are used.
+ALIAS(Turntable, 255)
+ALIAS(TTRoute1, 5179)
+ALIAS(TTRoute2, 5180)
+ALIAS(TTRoute3, 5181)
+ALIAS(TTRoute4, 5182)
+ALIAS(TTRoute5, 5183)
+ALIAS(TTRoute6, 5184)
+ALIAS(TTRoute7, 5185)
+```
 
 # To do/future
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
 
-- Enable text based activity flags ([Issue #22](https://github.com/DCC-EX/Turntable-EX/issues/22))
 - Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add extra activity flags to control turntable accessories ([Issue #20](https://github.com/DCC-EX/Turntable-EX/issues/20))
-- Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15
-))
+- Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
+- Adjust pin assignments to free pin 2 ([Issue #28](https://github.com/DCC-EX/Turntable-EX/issues/28))
+- Add a calibration function ([Issue #27](https://github.com/DCC-EX/Turntable-EX/issues/27))
+- Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
