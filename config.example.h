@@ -49,11 +49,17 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
 // 
+//  If you need to adjust the full rotation step count after calibration, uncomment the
+//  following line and set the correct number here.
+// #define FULLSTEPS 1234
+// 
 //  The direction the stepper turns when homing, CLOCKWISE or COUNTER_CLOCKWISE.
 #define STEPPER_DIRECTION CLOCKWISE
+// 
 //  Disable the stepper controller when idling, comment out to leave on. Note that this
 //  is handy to prevent controllers overheating, so this is a recommended setting.
 #define DISABLE_OUTPUTS_IDLE
+// 
 //  Define the acceleration and speed settings.
 #define STEPPER_MAX_SPEED 100     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
@@ -65,3 +71,10 @@
 //  The LED will alternative on/off for these durations.
 #define LED_FAST 100
 #define LED_SLOW 500
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Define the delay between calibration positions in milliseconds (default 15000).
+// 
+//  Depending on the speed settings, this may need to be longer or shorter to allow
+//  time to validate the positions are correct.
+#define CALIBRATION_DELAY 15000

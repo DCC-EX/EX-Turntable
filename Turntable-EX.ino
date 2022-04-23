@@ -26,14 +26,6 @@
 #include "standard_steppers.h"
 #include "version.h"
 
-// If we haven't got a custom config.h, use the example.
-#if __has_include ( "config.h")
-  #include "config.h"
-#else
-  #warning config.h not found. Using defaults from config.example.h
-  #include "config.example.h"
-#endif
-
 // Define global variables here.
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
@@ -46,11 +38,12 @@ const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
 const uint8_t ledPin = 13;                          // Pin for LED output.
 const uint8_t accPin = 6;                           // Pin for accessory output.
-// const uint8_t ledFast = 250;                        // 50ms delay for fast LED blink rate.
-// const uint8_t ledSlow = 1000;                       // 500ms delay for slow LED blink rate.
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
-unsigned long ledMillis = 0;                        // Required for LED blink rate timing.
+unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
+bool calibrating = false;                           // Flag to prevent other rotation activities during calibration.
+bool calibrationStarted = false;                    // Flag to allow delays during calibration process.
+unsigned long calMillis = 0;                        // Required for non blocking calibration pauses.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -97,6 +90,10 @@ void moveHome() {
     lastStep = 0;
     homed = true;
     Serial.println("Turntable homed successfully");
+    Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
+    Serial.print(lastStep);
+    Serial.print("/");
+    Serial.println(lastTarget);
   } else if(!stepper.isRunning()) {
     Serial.print("DEBUG: Recorded/last actual target: ");
     Serial.print(lastTarget);
@@ -137,21 +134,22 @@ void receiveEvent(int received) {
     Serial.print(", activity:");
     Serial.println(activity);
     steps = (stepsMSB << 8) + stepsLSB;
-    if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning()) {
+    if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
       moveToPosition(steps, activity);
-    } else if (activity == 2 && !stepper.isRunning()) {
+    } else if (activity == 2 && !stepper.isRunning() && !calibrating) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
       Serial.println("DEBUG: Requested to home");
       homed = false;
       lastTarget = fullTurnSteps * 2;
-    } else if (activity == 3 && !stepper.isRunning()) {
-      // Activity 3 will initiate calibration sequence, not implemented yet, only if stepper not running.
-      Serial.println("DEBUG: Calibration requested, not implemented yet");
+    } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
+      // Activity 3 will initiate calibration sequence, only if stepper not running.
+      Serial.println("DEBUG: Calibration requested");
+      calibrating = true;
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
       Serial.print("DEBUG: Set LED state to: ");
@@ -249,6 +247,69 @@ void processLED() {
   digitalWrite(ledPin, ledOutput);
 }
 
+// Function to rotate the turntable to 90, 180, 270, 360 degrees to validate step count.
+// Turntable will home first, then refer to lastStep to calculate next sequence position.
+// Non-blocking delays utilised.
+// At completion, it will move forward 100 steps, then home again.
+// Turntable positions to calibration:
+// 90 degress = round(fullTurnSteps * 0.25)
+// 180 degress = round(fullTurnSteps * 0.5)
+// 180 degress = round(fullTurnSteps * 0.75)
+// 360 degress = fullTurnSteps
+void calibration() {
+  if (!stepper.isRunning()) {
+    unsigned long currentMillis = millis();
+    if (lastStep == 0 && calibrationStarted) {
+      // If we're homed, move to 90 degree step position first.
+      Serial.print("Calibration: 90 degree step position: ");
+      Serial.println(round(fullTurnSteps * 0.25));
+      moveToPosition(round(fullTurnSteps * 0.25), 0);
+      calMillis = currentMillis;
+    } else if (lastStep == round(fullTurnSteps * 0.25) && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 90 degrees and we've waited 10 seconds, move to 180 degrees.
+      Serial.print("Calibration: 180 degree step position: ");
+      Serial.println(round(fullTurnSteps * 0.5));
+      moveToPosition(round(fullTurnSteps * 0.5), 0);
+      calMillis = currentMillis;
+    } else if (lastStep == round(fullTurnSteps * 0.5) && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 180 degrees and we've waited 10 seconds, move to 270 degrees.
+      Serial.print("Calibration: 270 degree step position: ");
+      Serial.println(round(fullTurnSteps * 0.75));
+      moveToPosition(round(fullTurnSteps * 0.75), 0);
+      calMillis = currentMillis;
+    } else if (lastStep == round(fullTurnSteps * 0.75) && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 270 degrees and we've waited 10 seconds, move to 360 degrees.
+      Serial.print("Calibration: 360 degree step position: ");
+      Serial.println(fullTurnSteps);
+      moveToPosition(fullTurnSteps, 0);
+      calMillis = currentMillis;
+    } else if (lastStep == fullTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 360 degrees and we've waited 10 seconds, move to 5% of steps so we're not homed.
+      Serial.print("Calibration completed, moving to step ");
+      Serial.print(round(fullTurnSteps * 0.05));
+      Serial.println(" then homing");
+      moveToPosition(round(fullTurnSteps * 0.05), 0);
+    } else if (lastStep == round(fullTurnSteps * 0.05)) {
+      // If we're at 5% of steps, calibration is done, trigger homing.
+      calibrating = false;
+      calibrationStarted = false;
+      homed = false;
+      lastTarget = fullTurnSteps * 2;
+    } else if (lastStep == round(fullTurnSteps * 0.1)) {
+      // If we're at 10% of steps, calibration starting, trigger homing.
+      homed = false;
+      lastTarget = fullTurnSteps * 2;
+    } else if (!calibrationStarted)  {
+      // Calibration starts at any position, so move to 10% as a known starting point then home again
+      Serial.print("Calibration initiated, moving to step ");
+      Serial.print(round(fullTurnSteps * 0.1));
+      Serial.println(" then homing");
+      moveToPosition(round(fullTurnSteps * 0.1), 0);
+      calibrationStarted = true;
+    }
+  }
+}
+
 void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
@@ -285,6 +346,10 @@ void loop() {
 // If we haven't successfully homed yet, do it.
   if (!homed) {
     moveHome();
+  }
+
+  if (calibrating) {
+    calibration();
   }
 
 // Process the stepper object continuously.

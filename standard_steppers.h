@@ -7,6 +7,14 @@
 #ifndef STANDARD_STEPPERS_h
 #define STANDARD_STEPPERS_h
 
+// If we haven't got a custom config.h, use the example.
+#if __has_include ( "config.h")
+  #include "config.h"
+#else
+  #warning config.h not found. Using defaults from config.example.h
+  #include "config.example.h"
+#endif
+
 #if STEPPER_CONTROLLER == ULN2003
 
 #define ULN2003_PIN1 8
@@ -32,7 +40,9 @@
 
 #if STEPPER_MOTOR == ULN2003COMBO
 
+#ifndef FULLSTEPS
 #define FULLSTEPS 2048
+#endif
 
 #endif
 
