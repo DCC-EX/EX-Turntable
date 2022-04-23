@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.7"
+#define VERSION "0.0.8"
 
+// 0.0.8 includes:
+//  - Added LED and accessory output support, with LED on/blink slow/blink fast/off, and accessory on/off.
 // 0.0.7 includes:
 //  - Revise return status to 0 (stopped) or 1 (moving) only, return status of 2 unused and causing issues with EX-RAIL RESERVE/FREE.
 // 0.0.6 includes:
