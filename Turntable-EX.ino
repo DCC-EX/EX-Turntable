@@ -44,6 +44,13 @@ bool homed = false;                                 // Flag to indicate if homin
 const uint8_t homeSensorPin = 2;                    // Define pin 2 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
+const uint8_t ledPin = 13;                          // Pin for LED output.
+const uint8_t accPin = 6;                           // Pin for accessory output.
+// const uint8_t ledFast = 250;                        // 50ms delay for fast LED blink rate.
+// const uint8_t ledSlow = 1000;                       // 500ms delay for slow LED blink rate.
+uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
+bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
+unsigned long ledMillis = 0;                        // Required for LED blink rate timing.
 
 // Setup our stepper object based on the standard definitions.
 #if STEPPER_CONTROLLER == ULN2003
@@ -117,7 +124,9 @@ void receiveEvent(int received) {
   Serial.println(" bytes");
   int16_t steps;  
   uint8_t activity;
+  // We need 3 received bytes in order to care about what's received.
   if (received == 3) {
+    // Get our 3 bytes of data, bit shift into steps.
     uint8_t stepsMSB = Wire.read();
     uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
@@ -129,15 +138,33 @@ void receiveEvent(int received) {
     Serial.println(activity);
     steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning()) {
+      // Activities 0/1 require turning and setting phase, process only if stepper is not running.
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
       moveToPosition(steps, activity);
     } else if (activity == 2 && !stepper.isRunning()) {
+      // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
       Serial.println("DEBUG: Requested to home");
       homed = false;
       lastTarget = fullTurnSteps * 2;
+    } else if (activity == 3 && !stepper.isRunning()) {
+      // Activity 3 will initiate calibration sequence, not implemented yet, only if stepper not running.
+      Serial.println("DEBUG: Calibration requested, not implemented yet");
+    } else if (activity > 3 && activity < 8) {
+      // Activities 4 through 7 set LED state.
+      Serial.print("DEBUG: Set LED state to: ");
+      Serial.println(activity);
+      ledState = activity;
+    } else if (activity == 8) {
+      // Activity 8 turns accessory pin on at any time.
+      Serial.println("DEBUG: Turn accessory pin on");
+      digitalWrite(accPin, HIGH);
+    } else if (activity == 9) {
+      // Activity 9 turns accessory pin off at any time.
+      Serial.println("DEBUG: Turn accessory pin off");
+      digitalWrite(accPin, LOW);
     } else {
       Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
       Serial.print(steps);
@@ -145,7 +172,7 @@ void receiveEvent(int received) {
       Serial.println(activity);
     }
   } else {
-    // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
+  // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
     while (Wire.available()) {
       Wire.read();
@@ -156,7 +183,6 @@ void receiveEvent(int received) {
 // Function to return the stepper status when requested by the IO_TurntableEX.h device driver.
 // 0 = Finished moving to the correct position.
 // 1 = Still moving.
-// 2 = Finished moving, but in an incorrect position.
 void requestEvent() {
   uint8_t stepperStatus;
   if (stepper.isRunning()) {
@@ -205,6 +231,24 @@ void setPhase(uint8_t phase) {
   digitalWrite(relay2Pin, phase);
 }
 
+// Function to set/maintain our LED state for on/blink/off.
+// 4 = on, 5 = slow blink, 6 = fast blink, 7 = off.
+void processLED() {
+  uint16_t currentMillis = millis();
+  if (ledState == 4 ) {
+    ledOutput = 1;
+  } else if (ledState == 7) {
+    ledOutput = 0;
+  } else if (ledState == 5 && currentMillis - ledMillis >= LED_SLOW) {
+    ledOutput = !ledOutput;
+    ledMillis = currentMillis;
+  } else if (ledState == 6 && currentMillis - ledMillis >= LED_FAST) {
+    ledOutput = !ledOutput;
+    ledMillis = currentMillis;
+  }
+  digitalWrite(ledPin, ledOutput);
+}
+
 void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
@@ -219,6 +263,10 @@ void setup() {
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
   pinMode(homeSensorPin, INPUT);
 #endif
+
+// Configure LED and accessory output pins
+  pinMode(ledPin, OUTPUT);
+  pinMode(accPin, OUTPUT);
 
 // Display the configured stepper details
   displayStepperConfig();
@@ -242,6 +290,8 @@ void loop() {
 // Process the stepper object continuously.
   stepper.run();
 
+// Process our LED.
+  processLED();
 
 // If disabling on idle is enabled, disable the stepper.
 #if defined(DISABLE_OUTPUTS_IDLE)
