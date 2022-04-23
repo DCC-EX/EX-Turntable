@@ -86,6 +86,13 @@ Diagnostic Activity | MOVETT() Activity | Action
 0 | Turn | Turn to the desired step positions
 1 | Turn_PInvert | Turn to the desired step position and invert the phase/polarity
 2 | Home | Activate the homing process, ignore the provided step position
+3 | Calibrate | Activate the calibration sequence, NOT IMPLEMENTED YET
+4 | LED_On | Turns the LED on, ignore the provided step position
+5 | LED_Slow | Sets the LED to a slow blink, ignore the provided step position
+6 | LED_Fast | Sets the LED to a fast blink, ignore the provided step position
+7 | LED_Off | Turns the LED off, ignore the provided step position
+8 | Acc_On | Turns the accessory output on, ignore the provided step position
+9 | Acc_Off | Turns the accessory output off, ignore the provided step position
 
 The two commands below are equivalent to turn to step position 100, and invert the phase/polarity:
 
@@ -151,7 +158,6 @@ ALIAS(TTRoute7, 5185)
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
 
 - Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
-- Add extra activity flags to control turntable accessories ([Issue #20](https://github.com/DCC-EX/Turntable-EX/issues/20))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
 - Adjust pin assignments to free pin 2 ([Issue #28](https://github.com/DCC-EX/Turntable-EX/issues/28))
 - Add a calibration function ([Issue #27](https://github.com/DCC-EX/Turntable-EX/issues/27))
