@@ -86,7 +86,7 @@ Diagnostic Activity | MOVETT() Activity | Action
 0 | Turn | Turn to the desired step positions
 1 | Turn_PInvert | Turn to the desired step position and invert the phase/polarity
 2 | Home | Activate the homing process, ignore the provided step position
-3 | Calibrate | Activate the calibration sequence, NOT IMPLEMENTED YET
+3 | Calibrate | Activate the calibration sequence
 4 | LED_On | Turns the LED on, ignore the provided step position
 5 | LED_Slow | Sets the LED to a slow blink, ignore the provided step position
 6 | LED_Fast | Sets the LED to a fast blink, ignore the provided step position
@@ -153,6 +153,43 @@ ALIAS(TTRoute6, 5184)
 ALIAS(TTRoute7, 5185)
 ```
 
+# Calibration sequence
+
+The calibration sequence has been added to validate that the defined number of steps for a full 360 degree rotation is accurate.
+
+The sequence is activated by ```<D TT 600 0 3>``` or ```MOVETT(600, 0, Calibrate)```.
+
+To calibrate your turntable, mark out four positions around the turntable for 0/360 degrees, 90 degrees, 180 degrees, and 270 degrees.
+
+When initiating the calibration sequence, the turntable will automatically cycle through these positions, pausing at each to allow validation that it is aligning correctly with those positions.
+
+The sequence will proceed as follows:
+
+- The turntable will first move to 10% of the defined full step count and then home to ensure the process starts accurately at the home position.
+- It will then move to 1/4 of the defined full step count and pause, which should align with the 90 degree mark.
+- It will then move to 1/2 of the defined full step count and pause, which should align with the 180 degree mark.
+- It will then move to 3/4 of the defined full step count and pause, which should align with the 270 degree mark.
+- It will then move to the defined full step count and pause, which should align with the 0/360 degree mark.
+- Finally, it will move to 5% of the defined full step count, and again home to ensure it returns to the home position.
+
+If the alignment is not as expected, adjust the step count by uncommenting the below line in "config.h" and setting the correct number of steps:
+
+```
+// #define FULLSTEPS 1234
+```
+
+If the correct number of steps for a 360 degree rotation should be 2000, the resultant line should look like this:
+
+```
+#define FULLSTEPS 2000
+```
+
+If the pauses at each position are too long or too short to assess the alignment, update the following line in "config.h" to increase or decrease the pause time, noting that this is in milliseconds (the default of 15000 = 15 seconds). Note that the delay time includes the amount of time for the stepper to move from position to position.
+
+```
+#define CALIBRATION_DELAY 15000
+```
+
 # To do/future
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
@@ -160,5 +197,4 @@ There are a number of items remaining to be completed yet, as well as some extra
 - Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
 - Adjust pin assignments to free pin 2 ([Issue #28](https://github.com/DCC-EX/Turntable-EX/issues/28))
-- Add a calibration function ([Issue #27](https://github.com/DCC-EX/Turntable-EX/issues/27))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))

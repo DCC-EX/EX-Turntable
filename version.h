@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.8"
+#define VERSION "0.0.9"
 
+// 0.0.9 includes:
+//  - Added calibration sequence to validate step count for 360 degree rotation is accurate.
 // 0.0.8 includes:
 //  - Added LED and accessory output support, with LED on/blink slow/blink fast/off, and accessory on/off.
 // 0.0.7 includes:
