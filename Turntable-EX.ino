@@ -33,11 +33,11 @@ const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to en
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
 int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
-const uint8_t homeSensorPin = 2;                    // Define pin 2 for the home sensor.
+const uint8_t homeSensorPin = 5;                    // Define pin 2 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
-const uint8_t ledPin = 13;                          // Pin for LED output.
-const uint8_t accPin = 6;                           // Pin for accessory output.
+const uint8_t ledPin = 6;                           // Pin for LED output.
+const uint8_t accPin = 7;                           // Pin for accessory output.
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -49,7 +49,7 @@ unsigned long calMillis = 0;                        // Required for non blocking
 #if STEPPER_CONTROLLER == ULN2003
 
 #if STEPPER_DIRECTION == CLOCKWISE
-AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN4, ULN2003_PIN2, ULN2003_PIN3, ULN2003_PIN1);
+AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_4, STEPPER_2, STEPPER_3, STEPPER_1);
 #elif STEPPER_DIRECTION == COUNTER_CLOCKWISE
 AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN1, ULN2003_PIN3, ULN2003_PIN2, ULN2003_PIN4);
 #endif

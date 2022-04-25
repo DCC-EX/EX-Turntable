@@ -1,8 +1,14 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.0.9"
+#define VERSION "0.1.0"
 
+// 0.1.0 includes:
+//  - "Breaking" change with revised pin allocations. This has been done to allow the potential future use of pin D2 for
+//    interrupt driven activities if required (potentially a DCC controlled option rather than I2C).
+//  - Also caters for GC9A01 round display if this proves viable.
+//  - There is also a simplification of the calibration sequence.
+//  - Also a clean up of debug outputs.
 // 0.0.9 includes:
 //  - Added calibration sequence to validate step count for 360 degree rotation is accurate.
 // 0.0.8 includes:
