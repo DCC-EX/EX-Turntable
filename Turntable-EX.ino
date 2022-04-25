@@ -221,7 +221,10 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.print(F("Received notification to move to step postion "));
     Serial.println(steps);
     int16_t moveSteps;
-    Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
+    Serial.print(F("Position steps: "));
+    Serial.print(steps);
+    Serial.print(F(", Phase switch flag: "));
+    Serial.print(phaseSwitch);
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
     } else if ((steps - lastStep) < -halfTurnSteps) {
@@ -229,17 +232,19 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     } else {
       moveSteps = steps - lastStep;
     }
-    Serial.println((String)" - moving " + moveSteps + " steps");
-    Serial.print("Setting phase switch flag to: ");
+    Serial.print(F(" - moving "));
+    Serial.print(moveSteps);
+    Serial.println(F(" steps"));
+    Serial.print(F("Setting phase switch flag to: "));
     Serial.println(phaseSwitch);
     setPhase(phaseSwitch);
     lastStep = steps;
     stepper.move(moveSteps);
     lastTarget = stepper.targetPosition();
 #ifdef DEBUG
-    Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
+    Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
     Serial.print(lastStep);
-    Serial.print("/");
+    Serial.print(F("/"));
     Serial.println(lastTarget);
 #endif
   }
@@ -250,7 +255,7 @@ void setPhase(uint8_t phase) {
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
 #ifdef DEBUG
-  Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
+  Serial.print(F("DEBUG: Setting relay outputs for relay 1/2: "));
   Serial.println(phase);
 #endif
   digitalWrite(relay1Pin, phase);
@@ -287,21 +292,21 @@ void calibration() {
     unsigned long currentMillis = millis();
     if (lastStep == 0 && calibrationStarted) {
       // If we're homed, move to 180 degree step position first.
-      Serial.print("Calibration: 180 degree step position: ");
+      Serial.print(F("Calibration: 180 degree step position: "));
       Serial.println(halfTurnSteps);
       moveToPosition(halfTurnSteps, 0);
       calMillis = currentMillis;
     } else if (lastStep == halfTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
       // If our last was 180 degrees and we've waited 10 seconds, move to 360 degrees.
-      Serial.print("Calibration: 360 degree step position: ");
+      Serial.print(F("Calibration: 360 degree step position: "));
       Serial.println(fullTurnSteps);
       moveToPosition(fullTurnSteps, 0);
       calMillis = currentMillis;
     } else if (lastStep == fullTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
       // If our last was 360 degrees and we've waited 10 seconds, move to 5% of steps so we're not homed.
-      Serial.print("Calibration completed, moving to step ");
+      Serial.print(F("Calibration completed, moving to step "));
       Serial.print(round(fullTurnSteps * 0.05));
-      Serial.println(" then homing");
+      Serial.println(F(" then homing"));
       moveToPosition(round(fullTurnSteps * 0.05), 0);
     } else if (lastStep == round(fullTurnSteps * 0.05)) {
       // If we're at 5% of steps, calibration is done, trigger homing.
@@ -315,9 +320,9 @@ void calibration() {
       lastTarget = fullTurnSteps * 2;
     } else if (!calibrationStarted)  {
       // Calibration starts at any position, so move to 10% as a known starting point then home again
-      Serial.print("Calibration initiated, moving to step ");
+      Serial.print(F("Calibration initiated, moving to step "));
       Serial.print(round(fullTurnSteps * 0.1));
-      Serial.println(" then homing");
+      Serial.println(F(" then homing"));
       moveToPosition(round(fullTurnSteps * 0.1), 0);
       calibrationStarted = true;
     }
@@ -328,8 +333,8 @@ void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
   while(!Serial);
-  Serial.println("License GPLv3 fsf.org (c) dcc-ex.com");
-  Serial.print("Turntable-EX version ");
+  Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
+  Serial.print(F("Turntable-EX version "));
   Serial.println(VERSION);
 
 // Configure homing sensor pin
@@ -353,7 +358,7 @@ void setup() {
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
-  Serial.println("Homing...");
+  Serial.println(F("Homing..."));
 }
 
 void loop() {
