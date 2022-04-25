@@ -252,14 +252,17 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
 
 // If phase switching is enabled, function to set it.
 void setPhase(uint8_t phase) {
-  pinMode(relay1Pin, OUTPUT);
-  pinMode(relay2Pin, OUTPUT);
 #ifdef DEBUG
   Serial.print(F("DEBUG: Setting relay outputs for relay 1/2: "));
   Serial.println(phase);
 #endif
+#if RELAY_ACTIVE_STATE == HIGH
   digitalWrite(relay1Pin, phase);
   digitalWrite(relay2Pin, phase);
+#elif RELAY_ACTIVE_STATE == LOW
+  digitalWrite(relay1Pin, !phase);
+  digitalWrite(relay2Pin, !phase);
+#endif
 }
 
 // Function to set/maintain our LED state for on/blink/off.
@@ -343,6 +346,10 @@ void setup() {
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
   pinMode(homeSensorPin, INPUT);
 #endif
+
+// Configure relay output pins
+  pinMode(relay1Pin, OUTPUT);
+  pinMode(relay2Pin, OUTPUT);
 
 // Configure LED and accessory output pins
   pinMode(ledPin, OUTPUT);

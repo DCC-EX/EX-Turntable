@@ -17,6 +17,13 @@
 #define HOME_SENSOR_ACTIVE_STATE LOW
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  Define the active state for the phase switching relays.
+//  LOW = When activated, the input is pulled down (ground or 0V).
+//  HIGH = When activated, the input is pulled up (typically 5V).
+// 
+#define RELAY_ACTIVE_STATE HIGH
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the stepper controller in use according to those available:
 // 
 //  ULN2003   : Commonly paired with the 28BYJ-48 unipolar stepper motor (Default)
