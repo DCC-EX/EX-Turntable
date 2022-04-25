@@ -15,22 +15,22 @@
   #include "config.example.h"
 #endif
 
+#define STEPPER_1 A0
+#define STEPPER_2 A1
+#define STEPPER_3 A2
+#define STEPPER_4 A3
+
 #if STEPPER_CONTROLLER == ULN2003
 
-#define ULN2003_PIN1 8
-#define ULN2003_PIN2 9
-#define ULN2003_PIN3 10
-#define ULN2003_PIN4 11
+
 
 #elif STEPPER_CONTROLLER == A4988
 
-#define A4988_STEP_PIN 8
-#define A4988_DIR_PIN 9
+
 
 #elif STEPPER_CONTROLLER == DRV8825
 
-#define DRV8825_STEP_PIN 8
-#define DRV8825_DIR_PIN 9
+
 
 #elif STEPPER_CONTROLLER == TMC2208
 

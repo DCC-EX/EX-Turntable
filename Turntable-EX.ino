@@ -33,11 +33,11 @@ const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to en
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
 int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
-const uint8_t homeSensorPin = 2;                    // Define pin 2 for the home sensor.
+const uint8_t homeSensorPin = 5;                    // Define pin 2 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
-const uint8_t ledPin = 13;                          // Pin for LED output.
-const uint8_t accPin = 6;                           // Pin for accessory output.
+const uint8_t ledPin = 6;                           // Pin for LED output.
+const uint8_t accPin = 7;                           // Pin for accessory output.
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -49,7 +49,7 @@ unsigned long calMillis = 0;                        // Required for non blocking
 #if STEPPER_CONTROLLER == ULN2003
 
 #if STEPPER_DIRECTION == CLOCKWISE
-AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN4, ULN2003_PIN2, ULN2003_PIN3, ULN2003_PIN1);
+AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_4, STEPPER_2, STEPPER_3, STEPPER_1);
 #elif STEPPER_DIRECTION == COUNTER_CLOCKWISE
 AccelStepper stepper(AccelStepper::FULL4WIRE, ULN2003_PIN1, ULN2003_PIN3, ULN2003_PIN2, ULN2003_PIN4);
 #endif
@@ -90,10 +90,12 @@ void moveHome() {
     lastStep = 0;
     homed = true;
     Serial.println("Turntable homed successfully");
+#ifdef DEBUG
     Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
     Serial.print(lastStep);
     Serial.print("/");
     Serial.println(lastTarget);
+#endif
   } else if(!stepper.isRunning()) {
     Serial.print("DEBUG: Recorded/last actual target: ");
     Serial.print(lastTarget);
@@ -107,8 +109,10 @@ void moveHome() {
     } else {
       stepper.move(fullTurnSteps * 2);
       lastTarget = stepper.targetPosition();
+#ifdef DEBUG
       Serial.print("DEBUG: lastTarget: ");
       Serial.println(lastTarget);
+#endif
       Serial.println("Homing started");
     }
   }
@@ -116,9 +120,11 @@ void moveHome() {
 
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
+#ifdef DEBUG
   Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
+#endif
   int16_t steps;  
   uint8_t activity;
   // We need 3 received bytes in order to care about what's received.
@@ -127,51 +133,69 @@ void receiveEvent(int received) {
     uint8_t stepsMSB = Wire.read();
     uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
+#ifdef DEBUG
     Serial.print("DEBUG: stepsMSB:");
     Serial.print(stepsMSB);
     Serial.print(", stepsLSB:");
     Serial.print(stepsLSB);
     Serial.print(", activity:");
     Serial.println(activity);
+#endif
     steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
+#ifdef DEBUG
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
+#endif
       moveToPosition(steps, activity);
     } else if (activity == 2 && !stepper.isRunning() && !calibrating) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
+#ifdef DEBUG
       Serial.println("DEBUG: Requested to home");
+#endif
       homed = false;
       lastTarget = fullTurnSteps * 2;
     } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
+#ifdef DEBUG
       Serial.println("DEBUG: Calibration requested");
+#endif
       calibrating = true;
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
+#ifdef DEBUG
       Serial.print("DEBUG: Set LED state to: ");
       Serial.println(activity);
+#endif
       ledState = activity;
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
+#ifdef DEBUG
       Serial.println("DEBUG: Turn accessory pin on");
+#endif
       digitalWrite(accPin, HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
+#ifdef DEBUG
       Serial.println("DEBUG: Turn accessory pin off");
+#endif
       digitalWrite(accPin, LOW);
     } else {
+#ifdef DEBUG
       Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
       Serial.print(steps);
       Serial.print(" steps, activity: ");
       Serial.println(activity);
+#endif
     }
   } else {
   // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
+#ifdef DEBUG
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
+#endif
     while (Wire.available()) {
       Wire.read();
     }
@@ -212,10 +236,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     lastStep = steps;
     stepper.move(moveSteps);
     lastTarget = stepper.targetPosition();
+#ifdef DEBUG
     Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
     Serial.print(lastStep);
     Serial.print("/");
     Serial.println(lastTarget);
+#endif
   }
 }
 
@@ -223,8 +249,10 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
 void setPhase(uint8_t phase) {
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
+#ifdef DEBUG
   Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
   Serial.println(phase);
+#endif
   digitalWrite(relay1Pin, phase);
   digitalWrite(relay2Pin, phase);
 }
@@ -252,33 +280,19 @@ void processLED() {
 // Non-blocking delays utilised.
 // At completion, it will move forward 100 steps, then home again.
 // Turntable positions to calibration:
-// 90 degress = round(fullTurnSteps * 0.25)
-// 180 degress = round(fullTurnSteps * 0.5)
-// 180 degress = round(fullTurnSteps * 0.75)
+// 180 degress = halfTurnSteps
 // 360 degress = fullTurnSteps
 void calibration() {
   if (!stepper.isRunning()) {
     unsigned long currentMillis = millis();
     if (lastStep == 0 && calibrationStarted) {
-      // If we're homed, move to 90 degree step position first.
-      Serial.print("Calibration: 90 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.25));
-      moveToPosition(round(fullTurnSteps * 0.25), 0);
-      calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.25) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 90 degrees and we've waited 10 seconds, move to 180 degrees.
+      // If we're homed, move to 180 degree step position first.
       Serial.print("Calibration: 180 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.5));
-      moveToPosition(round(fullTurnSteps * 0.5), 0);
+      Serial.println(halfTurnSteps);
+      moveToPosition(halfTurnSteps, 0);
       calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.5) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 180 degrees and we've waited 10 seconds, move to 270 degrees.
-      Serial.print("Calibration: 270 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.75));
-      moveToPosition(round(fullTurnSteps * 0.75), 0);
-      calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.75) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 270 degrees and we've waited 10 seconds, move to 360 degrees.
+    } else if (lastStep == halfTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 180 degrees and we've waited 10 seconds, move to 360 degrees.
       Serial.print("Calibration: 360 degree step position: ");
       Serial.println(fullTurnSteps);
       moveToPosition(fullTurnSteps, 0);

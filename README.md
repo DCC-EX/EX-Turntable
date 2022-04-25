@@ -55,13 +55,15 @@ These pins are in use:
 
 Pin | Function
 ----|---------
-D2 | Hall effect sensor
+A0 | Stepper pin 1
+A1 | Stepper pin 2
+A2 | Stepper pin 3
+A3 | Stepper pin 4
 D3 | Relay 1
 D4 | Relay 2
-D8 | Stepper pin 1
-D9 | Stepper pin 2
-D10 | Stepper pin 3
-D11 | Stepper pin 4
+D5 | Hall effect sensor
+D6 | LED output pin
+D7 | Accessory output pin
 
 # Turntable-EX control commands
 
@@ -159,16 +161,14 @@ The calibration sequence has been added to validate that the defined number of s
 
 The sequence is activated by ```<D TT 600 0 3>``` or ```MOVETT(600, 0, Calibrate)```.
 
-To calibrate your turntable, mark out four positions around the turntable for 0/360 degrees, 90 degrees, 180 degrees, and 270 degrees.
+To calibrate your turntable, mark the "home" position as 0/360 degrees, and put a mark at 180 degrees.
 
 When initiating the calibration sequence, the turntable will automatically cycle through these positions, pausing at each to allow validation that it is aligning correctly with those positions.
 
 The sequence will proceed as follows:
 
 - The turntable will first move to 10% of the defined full step count and then home to ensure the process starts accurately at the home position.
-- It will then move to 1/4 of the defined full step count and pause, which should align with the 90 degree mark.
 - It will then move to 1/2 of the defined full step count and pause, which should align with the 180 degree mark.
-- It will then move to 3/4 of the defined full step count and pause, which should align with the 270 degree mark.
 - It will then move to the defined full step count and pause, which should align with the 0/360 degree mark.
 - Finally, it will move to 5% of the defined full step count, and again home to ensure it returns to the home position.
 
@@ -196,5 +196,4 @@ There are a number of items remaining to be completed yet, as well as some extra
 
 - Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
-- Adjust pin assignments to free pin 2 ([Issue #28](https://github.com/DCC-EX/Turntable-EX/issues/28))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
