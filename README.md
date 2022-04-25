@@ -120,7 +120,7 @@ There will be a sample myTurntable-EX.h_example.txt file for users to copy and c
 #define TURNTABLE_EX(route_id, reserve_id, vpin, steps, activity, desc) \
   ROUTE(route_id, desc) \
     RESERVE(reserve_id) \
-    MOVETT(vpin, steps, activit) \
+    MOVETT(vpin, steps, activity) \
     WAITFOR(vpin) \
     FREE(reserve_id) \
     DONE

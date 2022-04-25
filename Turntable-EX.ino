@@ -67,9 +67,9 @@ AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_1, STEPPER_3, STEPPER_2, S
 void displayStepperConfig() {
   // Serial.println(STEPPER_CONTROLLER);
   // Serial.println(STEPPER_MOTOR);
-  Serial.print("Stepper motor configured for ");
+  Serial.print(F("Stepper motor configured for "));
   Serial.print(fullTurnSteps);
-  Serial.println(" steps");
+  Serial.println(F(" steps"));
 }
 
 // Function to define the stepper parameters.
@@ -89,31 +89,31 @@ void moveHome() {
     stepper.setCurrentPosition(0);
     lastStep = 0;
     homed = true;
-    Serial.println("Turntable homed successfully");
+    Serial.println(F("Turntable homed successfully"));
 #ifdef DEBUG
-    Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
+    Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
     Serial.print(lastStep);
-    Serial.print("/");
+    Serial.print(F("/"));
     Serial.println(lastTarget);
 #endif
   } else if(!stepper.isRunning()) {
-    Serial.print("DEBUG: Recorded/last actual target: ");
+    Serial.print(F("DEBUG: Recorded/last actual target: "));
     Serial.print(lastTarget);
-    Serial.print("/");
+    Serial.print(F("/"));
     Serial.println(stepper.targetPosition());
     if (stepper.targetPosition() == lastTarget) {
       stepper.setCurrentPosition(0);
       lastStep = 0;
       homed = true;
-      Serial.println("ERROR: Turntable failed to home, setting random home position");
+      Serial.println(F("ERROR: Turntable failed to home, setting random home position"));
     } else {
       stepper.move(fullTurnSteps * 2);
       lastTarget = stepper.targetPosition();
 #ifdef DEBUG
-      Serial.print("DEBUG: lastTarget: ");
+      Serial.print(F("DEBUG: lastTarget: "));
       Serial.println(lastTarget);
 #endif
-      Serial.println("Homing started");
+      Serial.println(F("Homing started"));
     }
   }
 }
@@ -121,9 +121,9 @@ void moveHome() {
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
 #ifdef DEBUG
-  Serial.print("DEBUG: Received ");
+  Serial.print(F("DEBUG: Received "));
   Serial.print(received);
-  Serial.println(" bytes");
+  Serial.println(F(" bytes"));
 #endif
   int16_t steps;  
   uint8_t activity;
@@ -134,67 +134,67 @@ void receiveEvent(int received) {
     uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
 #ifdef DEBUG
-    Serial.print("DEBUG: stepsMSB:");
+    Serial.print(F("DEBUG: stepsMSB:"));
     Serial.print(stepsMSB);
-    Serial.print(", stepsLSB:");
+    Serial.print(F(", stepsLSB:"));
     Serial.print(stepsLSB);
-    Serial.print(", activity:");
+    Serial.print(F(", activity:"));
     Serial.println(activity);
 #endif
     steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
 #ifdef DEBUG
-      Serial.print("DEBUG: Requested valid step move to: ");
+      Serial.print(F("DEBUG: Requested valid step move to: "));
       Serial.print(steps);
-      Serial.print(" with phase switch: ");
+      Serial.print(F(" with phase switch: "));
       Serial.println(activity);
 #endif
       moveToPosition(steps, activity);
     } else if (activity == 2 && !stepper.isRunning() && !calibrating) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
 #ifdef DEBUG
-      Serial.println("DEBUG: Requested to home");
+      Serial.println(F("DEBUG: Requested to home"));
 #endif
       homed = false;
       lastTarget = fullTurnSteps * 2;
     } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
 #ifdef DEBUG
-      Serial.println("DEBUG: Calibration requested");
+      Serial.println(F("DEBUG: Calibration requested"));
 #endif
       calibrating = true;
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
 #ifdef DEBUG
-      Serial.print("DEBUG: Set LED state to: ");
+      Serial.print(F("DEBUG: Set LED state to: "));
       Serial.println(activity);
 #endif
       ledState = activity;
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
 #ifdef DEBUG
-      Serial.println("DEBUG: Turn accessory pin on");
+      Serial.println(F("DEBUG: Turn accessory pin on"));
 #endif
       digitalWrite(accPin, HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
 #ifdef DEBUG
-      Serial.println("DEBUG: Turn accessory pin off");
+      Serial.println(F("DEBUG: Turn accessory pin off"));
 #endif
       digitalWrite(accPin, LOW);
     } else {
 #ifdef DEBUG
-      Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
+      Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));
       Serial.print(steps);
-      Serial.print(" steps, activity: ");
+      Serial.print(F(" steps, activity: "));
       Serial.println(activity);
 #endif
     }
   } else {
   // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
 #ifdef DEBUG
-    Serial.println("DEBUG: Incorrect number of bytes received, discarding");
+    Serial.println(F("DEBUG: Incorrect number of bytes received, discarding"));
 #endif
     while (Wire.available()) {
       Wire.read();
@@ -218,7 +218,7 @@ void requestEvent() {
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
-    Serial.print("Received notification to move to step postion ");
+    Serial.print(F("Received notification to move to step postion "));
     Serial.println(steps);
     int16_t moveSteps;
     Serial.print((String)"Position steps: " + steps + ", Phase switch flag: " + phaseSwitch);
