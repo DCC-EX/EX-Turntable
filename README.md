@@ -65,6 +65,19 @@ D5 | Hall effect sensor
 D6 | LED output pin
 D7 | Accessory output pin
 
+## Note on hall effect homing sensors and phase switching relays
+
+Given there are both active LOW and HIGH options out in the market place for both hall effect sensors and dual relay boards, the active state for each of these is configurable via "config.h".
+
+The default for homing sensors is LOW, and the default for the relay boards is HIGH.
+
+Adjust these lines in "config.h" to suit:
+
+```
+#define HOME_SENSOR_ACTIVE_STATE LOW
+#define RELAY_ACTIVE_STATE HIGH
+```
+
 # Turntable-EX control commands
 
 The turntable is controlled by sending the desired position defined as the number of steps from home, and an activity flag.
