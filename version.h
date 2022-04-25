@@ -1,8 +1,11 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
+// 0.1.1 includes:
+//  - Missed updating stepper pin definitions for COUNTER_CLOCKWISE.
+//  - Home sensor pin still incorrectly mentions pin 2.
 // 0.1.0 includes:
 //  - "Breaking" change with revised pin allocations. This has been done to allow the potential future use of pin D2 for
 //    interrupt driven activities if required (potentially a DCC controlled option rather than I2C).
