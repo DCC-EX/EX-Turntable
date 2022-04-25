@@ -78,3 +78,8 @@
 //  Depending on the speed settings, this may need to be longer or shorter to allow
 //  time to validate the positions are correct.
 #define CALIBRATION_DELAY 15000
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Enable debug outputs if required during troubleshooting.
+// 
+// #define DEBUG

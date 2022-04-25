@@ -90,10 +90,12 @@ void moveHome() {
     lastStep = 0;
     homed = true;
     Serial.println("Turntable homed successfully");
+#ifdef DEBUG
     Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
     Serial.print(lastStep);
     Serial.print("/");
     Serial.println(lastTarget);
+#endif
   } else if(!stepper.isRunning()) {
     Serial.print("DEBUG: Recorded/last actual target: ");
     Serial.print(lastTarget);
@@ -107,8 +109,10 @@ void moveHome() {
     } else {
       stepper.move(fullTurnSteps * 2);
       lastTarget = stepper.targetPosition();
+#ifdef DEBUG
       Serial.print("DEBUG: lastTarget: ");
       Serial.println(lastTarget);
+#endif
       Serial.println("Homing started");
     }
   }
@@ -116,9 +120,11 @@ void moveHome() {
 
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
+#ifdef DEBUG
   Serial.print("DEBUG: Received ");
   Serial.print(received);
   Serial.println(" bytes");
+#endif
   int16_t steps;  
   uint8_t activity;
   // We need 3 received bytes in order to care about what's received.
@@ -127,51 +133,69 @@ void receiveEvent(int received) {
     uint8_t stepsMSB = Wire.read();
     uint8_t stepsLSB = Wire.read();
     activity = Wire.read();
+#ifdef DEBUG
     Serial.print("DEBUG: stepsMSB:");
     Serial.print(stepsMSB);
     Serial.print(", stepsLSB:");
     Serial.print(stepsLSB);
     Serial.print(", activity:");
     Serial.println(activity);
+#endif
     steps = (stepsMSB << 8) + stepsLSB;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
+#ifdef DEBUG
       Serial.print("DEBUG: Requested valid step move to: ");
       Serial.print(steps);
       Serial.print(" with phase switch: ");
       Serial.println(activity);
+#endif
       moveToPosition(steps, activity);
     } else if (activity == 2 && !stepper.isRunning() && !calibrating) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
+#ifdef DEBUG
       Serial.println("DEBUG: Requested to home");
+#endif
       homed = false;
       lastTarget = fullTurnSteps * 2;
     } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
+#ifdef DEBUG
       Serial.println("DEBUG: Calibration requested");
+#endif
       calibrating = true;
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
+#ifdef DEBUG
       Serial.print("DEBUG: Set LED state to: ");
       Serial.println(activity);
+#endif
       ledState = activity;
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
+#ifdef DEBUG
       Serial.println("DEBUG: Turn accessory pin on");
+#endif
       digitalWrite(accPin, HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
+#ifdef DEBUG
       Serial.println("DEBUG: Turn accessory pin off");
+#endif
       digitalWrite(accPin, LOW);
     } else {
+#ifdef DEBUG
       Serial.print("DEBUG: Invalid step count or activity provided, or turntable still moving: ");
       Serial.print(steps);
       Serial.print(" steps, activity: ");
       Serial.println(activity);
+#endif
     }
   } else {
   // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
+#ifdef DEBUG
     Serial.println("DEBUG: Incorrect number of bytes received, discarding");
+#endif
     while (Wire.available()) {
       Wire.read();
     }
@@ -212,10 +236,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     lastStep = steps;
     stepper.move(moveSteps);
     lastTarget = stepper.targetPosition();
+#ifdef DEBUG
     Serial.print("DEBUG: Stored values for lastStep/lastTarget: ");
     Serial.print(lastStep);
     Serial.print("/");
     Serial.println(lastTarget);
+#endif
   }
 }
 
@@ -223,8 +249,10 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
 void setPhase(uint8_t phase) {
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
+#ifdef DEBUG
   Serial.print("DEBUG: Setting relay outputs for relay 1/2: ");
   Serial.println(phase);
+#endif
   digitalWrite(relay1Pin, phase);
   digitalWrite(relay2Pin, phase);
 }

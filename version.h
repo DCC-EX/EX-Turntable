@@ -8,7 +8,7 @@
 //    interrupt driven activities if required (potentially a DCC controlled option rather than I2C).
 //  - Also caters for GC9A01 round display if this proves viable.
 //  - There is also a simplification of the calibration sequence.
-//  - Also a clean up of debug outputs.
+//  - Also a clean up of debug outputs by using a DEBUG flag.
 // 0.0.9 includes:
 //  - Added calibration sequence to validate step count for 360 degree rotation is accurate.
 // 0.0.8 includes:

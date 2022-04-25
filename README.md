@@ -55,13 +55,15 @@ These pins are in use:
 
 Pin | Function
 ----|---------
-D2 | Hall effect sensor
+A0 | Stepper pin 1
+A1 | Stepper pin 2
+A2 | Stepper pin 3
+A3 | Stepper pin 4
 D3 | Relay 1
 D4 | Relay 2
-D8 | Stepper pin 1
-D9 | Stepper pin 2
-D10 | Stepper pin 3
-D11 | Stepper pin 4
+D5 | Hall effect sensor
+D6 | LED output pin
+D7 | Accessory output pin
 
 # Turntable-EX control commands
 
@@ -196,5 +198,4 @@ There are a number of items remaining to be completed yet, as well as some extra
 
 - Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
-- Adjust pin assignments to free pin 2 ([Issue #28](https://github.com/DCC-EX/Turntable-EX/issues/28))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
