@@ -161,16 +161,14 @@ The calibration sequence has been added to validate that the defined number of s
 
 The sequence is activated by ```<D TT 600 0 3>``` or ```MOVETT(600, 0, Calibrate)```.
 
-To calibrate your turntable, mark out four positions around the turntable for 0/360 degrees, 90 degrees, 180 degrees, and 270 degrees.
+To calibrate your turntable, mark the "home" position as 0/360 degrees, and put a mark at 180 degrees.
 
 When initiating the calibration sequence, the turntable will automatically cycle through these positions, pausing at each to allow validation that it is aligning correctly with those positions.
 
 The sequence will proceed as follows:
 
 - The turntable will first move to 10% of the defined full step count and then home to ensure the process starts accurately at the home position.
-- It will then move to 1/4 of the defined full step count and pause, which should align with the 90 degree mark.
 - It will then move to 1/2 of the defined full step count and pause, which should align with the 180 degree mark.
-- It will then move to 3/4 of the defined full step count and pause, which should align with the 270 degree mark.
 - It will then move to the defined full step count and pause, which should align with the 0/360 degree mark.
 - Finally, it will move to 5% of the defined full step count, and again home to ensure it returns to the home position.
 
