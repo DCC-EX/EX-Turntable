@@ -280,33 +280,19 @@ void processLED() {
 // Non-blocking delays utilised.
 // At completion, it will move forward 100 steps, then home again.
 // Turntable positions to calibration:
-// 90 degress = round(fullTurnSteps * 0.25)
-// 180 degress = round(fullTurnSteps * 0.5)
-// 180 degress = round(fullTurnSteps * 0.75)
+// 180 degress = halfTurnSteps
 // 360 degress = fullTurnSteps
 void calibration() {
   if (!stepper.isRunning()) {
     unsigned long currentMillis = millis();
     if (lastStep == 0 && calibrationStarted) {
-      // If we're homed, move to 90 degree step position first.
-      Serial.print("Calibration: 90 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.25));
-      moveToPosition(round(fullTurnSteps * 0.25), 0);
-      calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.25) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 90 degrees and we've waited 10 seconds, move to 180 degrees.
+      // If we're homed, move to 180 degree step position first.
       Serial.print("Calibration: 180 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.5));
-      moveToPosition(round(fullTurnSteps * 0.5), 0);
+      Serial.println(halfTurnSteps);
+      moveToPosition(halfTurnSteps, 0);
       calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.5) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 180 degrees and we've waited 10 seconds, move to 270 degrees.
-      Serial.print("Calibration: 270 degree step position: ");
-      Serial.println(round(fullTurnSteps * 0.75));
-      moveToPosition(round(fullTurnSteps * 0.75), 0);
-      calMillis = currentMillis;
-    } else if (lastStep == round(fullTurnSteps * 0.75) && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 270 degrees and we've waited 10 seconds, move to 360 degrees.
+    } else if (lastStep == halfTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
+      // If our last was 180 degrees and we've waited 10 seconds, move to 360 degrees.
       Serial.print("Calibration: 360 degree step position: ");
       Serial.println(fullTurnSteps);
       moveToPosition(fullTurnSteps, 0);
