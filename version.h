@@ -1,8 +1,12 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.1.1"
+#define VERSION "0.1.2"
 
+// 0.1.2 includes:
+//  - Fix typo in TURNTABLE_EX() macro in README (activit).
+//  - RAM optimisation with Serial.print(F()) and remove Serial.print((String)).
+//  - Enabled RELAY_ACTIVE_STATE to cater for active low or high relays.
 // 0.1.1 includes:
 //  - Missed updating stepper pin definitions for COUNTER_CLOCKWISE.
 //  - Home sensor pin still incorrectly mentions pin 2.
