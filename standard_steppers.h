@@ -20,18 +20,18 @@
 #define STEPPER_3 A2    // Pin 3 for 4 wire (ULN2003), enable pin for 2 wire (A4988, DRV8825)
 #define STEPPER_4 A3    // Pin 4 for 4 wire (ULN2003), unused for 2 wire
 
-#if STEPPER_MOTOR == ULN2003COMBO
+// #if STEPPER_MOTOR == ULN2003COMBO
 
-#ifndef FULLSTEPS
-#define FULLSTEPS 2048
-#endif
+// #ifndef FULLSTEPS
+// #define FULLSTEPS 2048
+// #endif
 
-#elif STEPPER_MOTOR == NEMA17
+// #elif STEPPER_MOTOR == NEMA17
 
-#ifndef FULLSTEPS
+// #ifndef FULLSTEPS
 #define FULLSTEPS 200
-#endif
+// #endif
 
-#endif
+// #endif
 
 #endif
