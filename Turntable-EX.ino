@@ -78,7 +78,8 @@ void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
   stepper.setAcceleration(STEPPER_ACCELERATION);
   stepper.setSpeed(STEPPER_SPEED);
-  stepper.setEnablePin(STEPPER_3);
+  stepper.setEnablePin(STEPPER_3);                // EN pin on 2 wire stepper drivers
+  stepper.setPinsInverted(false, false, true);    // Inversion of EN pin required for A4988/DRV8825
 }
 
 // Function to find the home position.

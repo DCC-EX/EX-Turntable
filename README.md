@@ -9,14 +9,14 @@ The integration includes:
 - I2C device driver
 - EX-RAIL automation support
 - Debug/test command (handy for tuning step positions)
-- Out-of-the-box support for several common stepper controllers
+- Out-of-the-box support for several common stepper motor drivers
 - DCC signal phase switching to align bridge track phase with layout phase
 
 # What you need for Turntable-EX
 
 - An Arduino microcontroller (tested on Nano V3, both old and new bootloader, an Uno R3 should also work)
-- A supported stepper motor controller and stepper motor
-- A hall effect (or similar) sensor for homing
+- A supported stepper motor driver and stepper motor
+- A digital hall effect (or similar) sensor for homing (eg. A3144 or 44E)
 - A dual relay board (or similar) if you wish to use the phase switching capability
 - A turntable capable of being driven by a stepper motor
 
@@ -47,23 +47,40 @@ void halSetup() {
 
 Like other DCC++ EX code, config.example.h is provided and will be utilised automatically if a specific config.h is not defined.
 
-If nothing is changed in Turntable-EX, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and a dual relay board for phase/polarity switching of the track on the turntable bridge.
+If nothing is changed in Turntable-EX, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and an active-high dual relay board for phase/polarity switching of the track on the turntable bridge.
 
-Other common stepper drivers/motors will be supported in due course once they've been able to be tested. These will include A4988, DRV8825, and likely TMC208 drivers, all with a NEMA17 stepper.
+Other common stepper drivers and motors are supported, and if an alternative driver or stepper is listed as "pin compatible" with one of these, it will likely also work with the caveat that if it hasn't been tested, that cannot be confirmed. The list of currently tested and supported stepper drivers and motors is:
+
+Driver | Stepper
+----|---------
+ULN2003 | 28BYJ-48
+A4988 | NEMA17
+DRV8825 | NEMA17
 
 These pins are in use:
 
 Pin | Function
 ----|---------
-A0 | Stepper pin 1
-A1 | Stepper pin 2
-A2 | Stepper pin 3
+A0 | Stepper pin 1 (note for 2 wire drivers, this is the "step" pin)
+A1 | Stepper pin 2 (note for 2 wire drivers, this is the "dir" pin)
+A2 | Stepper pin 3 (note for 2 wire drivers, this is the "enable" pin)
 A3 | Stepper pin 4
 D3 | Relay 1
 D4 | Relay 2
 D5 | Hall effect sensor
 D6 | LED output pin
 D7 | Accessory output pin
+
+These pins have been reserved for the potential addition of a GC9A01 round display using SPI:
+
+Pin | Function
+----|---------
+D8 | Backlight (BL)
+D9 | Reset (RST)
+D10 | Data/command (DC)
+D11 | SPI data (DIN/MOSI)
+D12 | Chip select (CS)
+D13 | SPI clock (SCK/CLK)
 
 ## Note on hall effect homing sensors and phase switching relays
 
@@ -207,6 +224,5 @@ If the pauses at each position are too long or too short to assess the alignment
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
 
-- Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
