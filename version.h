@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.1.2"
+#define VERSION "0.1.3"
 
+// 0.1.3 includes:
+//  - Add support for A4988 and DRV8825 with a NEMA17 stepper as part of the supported stepper options.
 // 0.1.2 includes:
 //  - Fix typo in TURNTABLE_EX() macro in README (activit).
 //  - RAM optimisation with Serial.print(F()) and remove Serial.print((String)).

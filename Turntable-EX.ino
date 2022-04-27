@@ -55,7 +55,8 @@ AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_1, STEPPER_3, STEPPER_2, S
 #endif
 
 #elif STEPPER_CONTROLLER == A4988
-
+AccelStepper stepper(AccelStepper::FULL2WIRE, STEPPER_1, STEPPER_2);
+stepper.setEnablePin(STEPPER_3);
 #elif STEPPER_CONTROLLER == DRV8825
 
 #elif STEPPER_CONTROLLER == TMC2208
