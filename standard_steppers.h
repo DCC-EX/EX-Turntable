@@ -29,7 +29,7 @@
 // #elif STEPPER_MOTOR == NEMA17
 
 // #ifndef FULLSTEPS
-#define FULLSTEPS 200
+#define FULLSTEPS 800
 // #endif
 
 // #endif

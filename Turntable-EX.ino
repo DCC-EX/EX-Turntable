@@ -20,7 +20,7 @@
 // Include required libraries.
 #include <Arduino.h>
 #include <Wire.h>
-#include <AccelStepper.h>
+#include "AccelStepper.h"
 
 // Include standard stepper definitions, version history, and position definitions.
 #include "standard_steppers.h"
@@ -111,6 +111,7 @@ void moveHome() {
       Serial.println(F("ERROR: Turntable failed to home, setting random home position"));
     } else {
       stepper.move(fullTurnSteps * 2);
+      stepper.enableOutputs();
       lastTarget = stepper.targetPosition();
 #ifdef DEBUG
       Serial.print(F("DEBUG: lastTarget: "));
@@ -243,6 +244,7 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     setPhase(phaseSwitch);
     lastStep = steps;
     stepper.move(moveSteps);
+    stepper.enableOutputs();
     lastTarget = stepper.targetPosition();
 #ifdef DEBUG
     Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));

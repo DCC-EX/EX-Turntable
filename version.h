@@ -1,9 +1,13 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.1.3"
+#define VERSION "0.2.0"
 
-// 0.1.3 includes:
+// 0.2.0 includes:
+//  - Completely refactor stepper support to a class wrapping AccelStepper to allow for future similar to motor drivers in CommandStation-EX.
+//  - Eliminate defining step count, and use homing to determine rotational steps which are stored in EEPROM.
+//  - Calibration sequence rewrite to erase EEPROM (if used) and use homing to count rotational steps.
+//  - Start checks for EEPROM and initiates calibration if not set.
 //  - Add support for A4988 and DRV8825 with a NEMA17 stepper as part of the supported stepper options.
 // 0.1.2 includes:
 //  - Fix typo in TURNTABLE_EX() macro in README (activit).
