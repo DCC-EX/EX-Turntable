@@ -2,9 +2,9 @@
 
 **Note: This code is currently considered experimental and under rapid development. This README is aimed at DCC++ EX team members who wish to help with development and testing prior to release.**
 
-**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. Version 1.61 of this library is included (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page.
+**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. Version 1.61 of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page.
 
-Turntable-EX is a fully integrated turntable controller, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
+Turntable-EX is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
 
 The integration includes:
 

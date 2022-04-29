@@ -57,13 +57,13 @@ unsigned long calMillis = 0;                        // Required for non blocking
 // #if STEPPER_CONTROLLER == ULN2003
 
 // #if STEPPER_DIRECTION == CLOCKWISE
-// AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_4, STEPPER_2, STEPPER_3, STEPPER_1);
+AccelStepper stepper(AccelStepper::HALF4WIRE, A3, A1, A2, A0);
 // #elif STEPPER_DIRECTION == COUNTER_CLOCKWISE
 // AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_1, STEPPER_3, STEPPER_2, STEPPER_4);
 // #endif
 
 // #elif STEPPER_CONTROLLER == A4988
-AccelStepper stepper(AccelStepper::FULL2WIRE, STEPPER_1, STEPPER_2);
+// AccelStepper stepper(AccelStepper::FULL2WIRE, STEPPER_1, STEPPER_2);
 
 // #elif STEPPER_CONTROLLER == DRV8825
 
@@ -85,9 +85,8 @@ void displayStepperConfig() {
 void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
   stepper.setAcceleration(STEPPER_ACCELERATION);
-  stepper.setSpeed(STEPPER_SPEED);
-  stepper.setEnablePin(STEPPER_3);                // EN pin on 2 wire stepper drivers
-  stepper.setPinsInverted(false, false, true);    // Inversion of EN pin required for A4988/DRV8825
+  // stepper.setEnablePin(STEPPER_3);                // EN pin on 2 wire stepper drivers
+  // stepper.setPinsInverted(false, false, true);    // Inversion of EN pin required for A4988/DRV8825
 }
 
 // Function to find the home position.
@@ -118,8 +117,8 @@ void moveHome() {
       homed = true;
       Serial.println(F("ERROR: Turntable failed to home, setting random home position"));
     } else {
-      stepper.move(fullTurnSteps * 2);
       stepper.enableOutputs();
+      stepper.move(fullTurnSteps * 2);
       lastTarget = stepper.targetPosition();
 #ifdef DEBUG
       Serial.print(F("DEBUG: lastTarget: "));
@@ -251,8 +250,8 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.println(phaseSwitch);
     setPhase(phaseSwitch);
     lastStep = steps;
-    stepper.move(moveSteps);
     stepper.enableOutputs();
+    stepper.move(moveSteps);
     lastTarget = stepper.targetPosition();
 #ifdef DEBUG
     Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));

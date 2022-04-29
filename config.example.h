@@ -70,7 +70,6 @@
 //  Define the acceleration and speed settings.
 #define STEPPER_MAX_SPEED 100     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
-#define STEPPER_SPEED 100         // Constant speed for the stepper (eg. when homing)
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
