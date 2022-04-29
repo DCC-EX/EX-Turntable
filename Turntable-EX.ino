@@ -26,6 +26,14 @@
 #include "standard_steppers.h"
 #include "version.h"
 
+// If we haven't got a custom config.h, use the example.
+#if __has_include ( "config.h")
+  #include "config.h"
+#else
+  #warning config.h not found. Using defaults from config.example.h
+  #include "config.example.h"
+#endif
+
 // Define global variables here.
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
