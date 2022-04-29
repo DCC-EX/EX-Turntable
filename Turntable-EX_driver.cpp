@@ -46,9 +46,7 @@ TurntableEXStepper :: TurntableEXStepper(
     new AccelStepper(AccelStepper::HALF4WIRE, _stepperPin1, _stepperPin2, _stepperPin3, _stepperPin4);
   }
 
-  void move(long relative) {
-    
-  }
+  void move(long relative);
   
   bool run();
   
