@@ -36,39 +36,22 @@
 //  some controllers that are pin-compatible with an existing defined controller, and
 //  in those instances, no custom configuration would be required.
 // 
-#define STEPPER_CONTROLLER ULN2003
-
-/////////////////////////////////////////////////////////////////////////////////////
-//  Define the stepper motor in use according to those available:
-// 
-//  ULN2003COMBO  : 28BYJ-48 stepper with the ULN2003 (Default)
-//  NEMA17        : 
-//  NEMA23        :
-//  Other?        :
-// 
-//  NOTE: If you are using a different controller than those already defined, refer to
-//  the documentation to define the appropriate configuration variables. Note there are
-//  some controllers that are pin-compatible with an existing defined controller, and
-//  in those instances, no custom configuration would be required.
-// 
-#define STEPPER_MOTOR ULN2003COMBO
+#define STEPPER_DRIVER ULN2003_HALF_CW
+// #define STEPPER_DRIVER ULN2003_HALF_CCW
+// #define STEPPER_DRIVER ULN2003_FULL_CW
+// #define STEPPER_DRIVER ULN2003_FULL_CCW
+// #define STEPPER_DRIVER TWO_WIRE
+// #define STEPPER_DRIVER TWO_WIRE_INV
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
-// 
-//  If you need to adjust the full rotation step count after calibration, uncomment the
-//  following line and set the correct number here.
-// #define FULLSTEPS 1234
-// 
-//  The direction the stepper turns when homing, CLOCKWISE or COUNTER_CLOCKWISE.
-#define STEPPER_DIRECTION CLOCKWISE
-// 
+//
 //  Disable the stepper controller when idling, comment out to leave on. Note that this
 //  is handy to prevent controllers overheating, so this is a recommended setting.
 #define DISABLE_OUTPUTS_IDLE
 // 
 //  Define the acceleration and speed settings.
-#define STEPPER_MAX_SPEED 100     // Maximum possible speed the stepper will reach
+#define STEPPER_MAX_SPEED 200     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
 
 /////////////////////////////////////////////////////////////////////////////////////

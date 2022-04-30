@@ -370,7 +370,12 @@ public:
     /// to pin 5.
     /// \param[in] enable If this is true (the default), enableOutputs() will be called to enable
     /// the output pins at construction time.
-    AccelStepper(uint8_t interface = AccelStepper::FULL4WIRE, uint8_t pin1 = 2, uint8_t pin2 = 3, uint8_t pin3 = 4, uint8_t pin4 = 5, bool enable = true);
+
+    // Line below commented out is the original AccelStepper line.
+    // AccelStepper(uint8_t interface = AccelStepper::FULL4WIRE, uint8_t pin1 = 2, uint8_t pin2 = 3, uint8_t pin3 = 4, uint8_t pin4 = 5, bool enable = true);
+
+// Turntable-EX modification: add extra flag to enable automatic inversion of two wire drivers at instantiation.
+    AccelStepper(uint8_t interface = AccelStepper::FULL4WIRE, uint8_t pin1 = 2, uint8_t pin2 = 3, uint8_t pin3 = 4, uint8_t pin4 = 5, bool enable = true, bool invert = false);
 
     /// Alternate Constructor which will call your own functions for forward and backward steps. 
     /// You can have multiple simultaneous steppers, all moving
@@ -689,6 +694,9 @@ private:
 
     /// Min step size in microseconds based on maxSpeed
     float _cmin; // at max speed
+
+    // Turntable-EX modification: add extra flag to enable automatic inversion of two wire drivers at instantiation.
+    bool _invert;
 
 };
 

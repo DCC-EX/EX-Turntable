@@ -53,23 +53,7 @@ bool calibrating = false;                           // Flag to prevent other rot
 bool calibrationStarted = false;                    // Flag to allow delays during calibration process.
 unsigned long calMillis = 0;                        // Required for non blocking calibration pauses.
 
-// Setup our stepper object based on the standard definitions.
-// #if STEPPER_CONTROLLER == ULN2003
-
-// #if STEPPER_DIRECTION == CLOCKWISE
-AccelStepper stepper(AccelStepper::HALF4WIRE, A3, A1, A2, A0);
-// #elif STEPPER_DIRECTION == COUNTER_CLOCKWISE
-// AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_1, STEPPER_3, STEPPER_2, STEPPER_4);
-// #endif
-
-// #elif STEPPER_CONTROLLER == A4988
-// AccelStepper stepper(AccelStepper::FULL2WIRE, STEPPER_1, STEPPER_2);
-
-// #elif STEPPER_CONTROLLER == DRV8825
-
-// #elif STEPPER_CONTROLLER == TMC2208
-
-// #endif
+AccelStepper stepper = STEPPER_DRIVER;
 
 // Function to display the defined stepper motor config.
 // Currently not able to print text based macros.
@@ -85,8 +69,6 @@ void displayStepperConfig() {
 void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
   stepper.setAcceleration(STEPPER_ACCELERATION);
-  // stepper.setEnablePin(STEPPER_3);                // EN pin on 2 wire stepper drivers
-  // stepper.setPinsInverted(false, false, true);    // Inversion of EN pin required for A4988/DRV8825
 }
 
 // Function to find the home position.

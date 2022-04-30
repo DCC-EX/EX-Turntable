@@ -10,27 +10,15 @@
 #include <Arduino.h>
 #include "AccelStepper.h"
 
-#ifndef UNUSED_PIN
 #define UNUSED_PIN 127
-#endif
 
-// #define STEPPER_1 A0    // Pin 1 for 4 wire (ULN2003), step pin for 2 wire (A4988, DRV8825)
-// #define STEPPER_2 A1    // Pin 2 for 4 wire (ULN2003), dir pin for 2 wire (A4988, DRV8825)
-// #define STEPPER_3 A2    // Pin 3 for 4 wire (ULN2003), enable pin for 2 wire (A4988, DRV8825)
-// #define STEPPER_4 A3    // Pin 4 for 4 wire (ULN2003), unused for 2 wire
+#define FULLSTEPS 800
 
-// #if STEPPER_MOTOR == ULN2003COMBO
-
-// #ifndef FULLSTEPS
-// #define FULLSTEPS 2048
-// #endif
-
-// #elif STEPPER_MOTOR == NEMA17
-
-// #ifndef FULLSTEPS
-#define FULLSTEPS 4096
-// #endif
-
-// #endif
+#define ULN2003_HALF_CW AccelStepper(AccelStepper::HALF4WIRE, A3, A1, A2, A0)
+#define ULN2003_HALF_CCW AccelStepper(AccelStepper::HALF4WIRE, A0, A2, A1, A3)
+#define ULN2003_FULL_CW AccelStepper(AccelStepper::FULL4WIRE, A3, A1, A2, A0)
+#define ULN2003_FULL_CCW AccelStepper(AccelStepper::FULL4WIRE, A0, A2, A1, A3)
+#define TWO_WIRE AccelStepper(AccelStepper::FULL2WIRE, A0, A1, A2)
+#define TWO_WIRE_INV AccelStepper(AccelStepper::FULL2WIRE, A0, A1, A2, UNUSED_PIN, true, true)
 
 #endif
