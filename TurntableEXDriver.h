@@ -31,9 +31,9 @@
 #define TTEX_FULL4WIRE 4        // Use for ULN2003 and other 4 wire drivers in full step mode
 #define TTEX_HALF4WIRE 8        // Use for ULN2003 and other 4 wire drivers in half step mode
 
-class TurntableEXStepper {
+class TurntableEXDriver {
   public:
-    TurntableEXStepper(
+    TurntableEXDriver(
       uint8_t stepperType,
       uint8_t stepperPin1,
       uint8_t stepperPin2,
@@ -64,6 +64,8 @@ class TurntableEXStepper {
     float _maxSpeed;
     float _acceleration;
     bool _invertEnable;
+
+    AccelStepper stepper =  AccelStepper(AccelStepper::HALF4WIRE, _stepperPin1, _stepperPin2, _stepperPin3, _stepperPin4);
 };
 
 #endif
