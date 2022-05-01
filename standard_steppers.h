@@ -12,7 +12,7 @@
 
 #define UNUSED_PIN 127
 
-#define FULLSTEPS 800
+#define FULLSTEPS 4096
 
 #define ULN2003_HALF_CW AccelStepper(AccelStepper::HALF4WIRE, A3, A1, A2, A0)
 #define ULN2003_HALF_CCW AccelStepper(AccelStepper::HALF4WIRE, A0, A2, A1, A3)

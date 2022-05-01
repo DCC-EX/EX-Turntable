@@ -20,6 +20,7 @@
 // Include required libraries.
 #include <Arduino.h>
 #include <Wire.h>
+#include <EEPROM.h>
 #include "AccelStepper.h"
 
 // Include standard stepper definitions, version history, and position definitions.
@@ -36,10 +37,14 @@
 
 // Define global variables here.
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
-const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
-const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
+// const int16_t fullTurnSteps = FULLSTEPS;            // Assign our defined full turn steps from config.h.
+// const int16_t halfTurnSteps = fullTurnSteps / 2;    // Defines a half turn to enable moving the least distance.
+int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
+int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
+const int16_t sanitySteps = 10000;                  // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
-int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
+// int16_t lastTarget = fullTurnSteps * 2;             // Holds the last step target (prevents continuous rotatins if homing fails).
+int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
 bool homed = false;                                 // Flag to indicate if homing has been successful or not.
 const uint8_t homeSensorPin = 5;                    // Define pin 5 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
@@ -55,11 +60,60 @@ unsigned long calMillis = 0;                        // Required for non blocking
 
 AccelStepper stepper = STEPPER_DRIVER;
 
+// Function to retrieve step count from EEPROM.
+// Looks for identifier "TTEX" at 0 to 3.
+// MSB of steps stored in 4.
+// LSB of steps stored in 5.
+int16_t getSteps() {
+  char data[4];
+  int16_t eepromSteps;
+  for (uint8_t i = 0; i < 4; i ++) {
+    data[i] = EEPROM.read(i);
+  }
+  if (strcmp(data, "TTEX") == 0) {
+    eepromSteps = (EEPROM.read(4) << 8) + EEPROM.read(5);
+    if (eepromSteps <= sanitySteps) {
+#ifdef DEBUG
+      Serial.print(F("DEBUG: TTEX steps defined in EEPROM: "));
+      Serial.println(eepromSteps);
+#endif
+      return eepromSteps;
+    } else {
+#ifdef DEBUG
+      Serial.print(F("DEBUG: TTEX steps defined in EEPROM are invalid: "));
+      Serial.println(eepromSteps);
+#endif
+      calibrating = true;
+      return 0;
+    }
+  } else {
+#ifdef DEBUG
+    Serial.println(F("DEBUG: TTEX steps not defined in EEPROM"));
+#endif
+    calibrating = true;
+    return 0;
+  }
+}
+
+// Function to write step count with "TTEX" identifier to EEPROM.
+void writeEEPROM(int16_t steps) {
+  char data[4] = {'T', 'T', 'E', 'X'};
+  for (uint8_t i = 0; i < 4; i++) {
+    EEPROM.write(i, data[i]);
+  }
+  EEPROM.write(4, steps >> 8);
+  EEPROM.write(5, steps & 0xFF);
+}
+
+// Function to clear step count and identifier from EEPROM.
+void clearEEPROM() {
+  for (uint8_t i = 0; i < 6; i++) {
+    EEPROM.write(i, 0);
+  }
+}
+
 // Function to display the defined stepper motor config.
-// Currently not able to print text based macros.
 void displayStepperConfig() {
-  // Serial.println(STEPPER_CONTROLLER);
-  // Serial.println(STEPPER_MOTOR);
   Serial.print(F("Stepper motor configured for "));
   Serial.print(fullTurnSteps);
   Serial.println(F(" steps"));
@@ -100,7 +154,8 @@ void moveHome() {
       Serial.println(F("ERROR: Turntable failed to home, setting random home position"));
     } else {
       stepper.enableOutputs();
-      stepper.move(fullTurnSteps * 2);
+      // stepper.move(fullTurnSteps * 2);
+      stepper.move(sanitySteps);
       lastTarget = stepper.targetPosition();
 #ifdef DEBUG
       Serial.print(F("DEBUG: lastTarget: "));
@@ -150,7 +205,8 @@ void receiveEvent(int received) {
       Serial.println(F("DEBUG: Requested to home"));
 #endif
       homed = false;
-      lastTarget = fullTurnSteps * 2;
+      // lastTarget = fullTurnSteps * 2;
+      lastTarget = sanitySteps;
     } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
 #ifdef DEBUG
@@ -284,45 +340,84 @@ void processLED() {
 // Turntable positions to calibration:
 // 180 degress = halfTurnSteps
 // 360 degress = fullTurnSteps
+// void calibration() {
+//   if (!stepper.isRunning()) {
+//     unsigned long currentMillis = millis();
+//     if (lastStep == 0 && calibrationStarted) {
+//       // If we're homed, move to 180 degree step position first.
+//       Serial.print(F("Calibration: 180 degree step position: "));
+//       Serial.println(halfTurnSteps);
+//       moveToPosition(halfTurnSteps, 0);
+//       calMillis = currentMillis;
+//     } else if (lastStep == halfTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
+//       // If our last was 180 degrees and we've waited 10 seconds, move to 360 degrees.
+//       Serial.print(F("Calibration: 360 degree step position: "));
+//       Serial.println(fullTurnSteps);
+//       moveToPosition(fullTurnSteps, 0);
+//       calMillis = currentMillis;
+//     } else if (lastStep == fullTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
+//       // If our last was 360 degrees and we've waited 10 seconds, move to 5% of steps so we're not homed.
+//       Serial.print(F("Calibration completed, moving to step "));
+//       Serial.print(round(fullTurnSteps * 0.05));
+//       Serial.println(F(" then homing"));
+//       moveToPosition(round(fullTurnSteps * 0.05), 0);
+//     } else if (lastStep == round(fullTurnSteps * 0.05)) {
+//       // If we're at 5% of steps, calibration is done, trigger homing.
+//       calibrating = false;
+//       calibrationStarted = false;
+//       homed = false;
+//       // lastTarget = fullTurnSteps * 2;
+//       lastTarget = sanitySteps;
+//     } else if (lastStep == round(fullTurnSteps * 0.1)) {
+//       // If we're at 10% of steps, calibration starting, trigger homing.
+//       homed = false;
+//       // lastTarget = fullTurnSteps * 2;
+//       lastTarget = sanitySteps;
+//     } else if (!calibrationStarted)  {
+//       // Calibration starts at any position, so move to 10% as a known starting point then home again
+//       Serial.print(F("Calibration initiated, moving to step "));
+//       Serial.print(round(fullTurnSteps * 0.1));
+//       Serial.println(F(" then homing"));
+//       moveToPosition(round(fullTurnSteps * 0.1), 0);
+//       calibrationStarted = true;
+//     }
+//   }
+// }
+
+// The calibration function is used to determine the number of steps required for a single 360 degree rotation.
+// This should only be trigged when either there are no stored steps in EEPROM, the stored steps are invalid,
+// or the calibration command has been initiated by the CommandStation.
+// Logic:
+// - Move away from home if already homed and erase EEPROM.
+// - Perform initial home rotation, set to 0 steps when homed.
+// - Perform second home rotation, set steps to currentPosition().
+// - Write steps to EEPROM.
 void calibration() {
-  if (!stepper.isRunning()) {
-    unsigned long currentMillis = millis();
-    if (lastStep == 0 && calibrationStarted) {
-      // If we're homed, move to 180 degree step position first.
-      Serial.print(F("Calibration: 180 degree step position: "));
-      Serial.println(halfTurnSteps);
-      moveToPosition(halfTurnSteps, 0);
-      calMillis = currentMillis;
-    } else if (lastStep == halfTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 180 degrees and we've waited 10 seconds, move to 360 degrees.
-      Serial.print(F("Calibration: 360 degree step position: "));
-      Serial.println(fullTurnSteps);
-      moveToPosition(fullTurnSteps, 0);
-      calMillis = currentMillis;
-    } else if (lastStep == fullTurnSteps && currentMillis - calMillis >= CALIBRATION_DELAY) {
-      // If our last was 360 degrees and we've waited 10 seconds, move to 5% of steps so we're not homed.
-      Serial.print(F("Calibration completed, moving to step "));
-      Serial.print(round(fullTurnSteps * 0.05));
-      Serial.println(F(" then homing"));
-      moveToPosition(round(fullTurnSteps * 0.05), 0);
-    } else if (lastStep == round(fullTurnSteps * 0.05)) {
-      // If we're at 5% of steps, calibration is done, trigger homing.
-      calibrating = false;
-      calibrationStarted = false;
-      homed = false;
-      lastTarget = fullTurnSteps * 2;
-    } else if (lastStep == round(fullTurnSteps * 0.1)) {
-      // If we're at 10% of steps, calibration starting, trigger homing.
-      homed = false;
-      lastTarget = fullTurnSteps * 2;
-    } else if (!calibrationStarted)  {
-      // Calibration starts at any position, so move to 10% as a known starting point then home again
-      Serial.print(F("Calibration initiated, moving to step "));
-      Serial.print(round(fullTurnSteps * 0.1));
-      Serial.println(F(" then homing"));
-      moveToPosition(round(fullTurnSteps * 0.1), 0);
-      calibrationStarted = true;
-    }
+  if (calibrationStarted && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+    stepper.stop();
+#if defined(DISABLE_OUTPUTS_IDLE)
+    stepper.disableOutputs();
+#endif
+    fullTurnSteps = stepper.currentPosition();
+    halfTurnSteps = fullTurnSteps / 2;
+    calibrating = false;
+    calibrationStarted = false;
+    writeEEPROM(fullTurnSteps);
+    Serial.print(F("CALIBRATION: Completed, storing full turn step count: "));
+    Serial.println(fullTurnSteps);
+    homed = false;
+    lastTarget = sanitySteps;
+  } else if (!calibrationStarted && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+    Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
+    stepper.stop();
+    calibrationStarted = true;
+    moveToPosition(sanitySteps, 0);
+  } else if (!calibrationStarted && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+    Serial.println(F("CALIBRATION: Moving away from home"));
+    moveToPosition(150, 0);
+  } else if (!calibrationStarted && lastStep == 150) {
+    Serial.println(F("CALIBRATION: Phase 1, homing..."));
+    moveToPosition(sanitySteps, 0);
   }
 }
 
@@ -349,6 +444,11 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(accPin, OUTPUT);
 
+// Read steps from EEPROM
+  // fullTurnSteps = getSteps();
+  fullTurnSteps = getSteps();
+  halfTurnSteps = fullTurnSteps / 2;
+
 // Display the configured stepper details
   displayStepperConfig();
 
@@ -359,7 +459,11 @@ void setup() {
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
-  Serial.println(F("Homing..."));
+  if (calibrating) {
+    Serial.println(F("Calibrating..."));
+  } else {
+    Serial.println(F("Homing..."));
+  }
 }
 
 void loop() {
@@ -368,6 +472,7 @@ void loop() {
     moveHome();
   }
 
+// If flag is set for calibrating, do it.
   if (calibrating) {
     calibration();
   }
