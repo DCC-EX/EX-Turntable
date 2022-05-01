@@ -197,6 +197,8 @@ The calibration sequence will first initiate a rotation to home the turntable (i
 
 At any time, calibration can be performed again using the "Calibrate" (diagnostic activity 3) command, which will erase the EEPROM contents and initiate the sequence.
 
+Note that if homing fails and calibration has not completed successfully to store the step counts, calibration will not commence until such time as a successful homing activity has been performed. In this instance, once homing issues are resolved, initiate either a "Home" (2) or "Calibrate" (3) command.
+
 # To do/future
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:

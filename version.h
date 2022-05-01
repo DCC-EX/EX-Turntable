@@ -1,8 +1,11 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.2.0"
+#define VERSION "0.2.1"
 
+// 0.2.1 includes:
+//  - Bug fix where failed homing puts calibration into infinite loop.
+//  - Calibration no longer initiated if homing fails.
 // 0.2.0 includes:
 //  - Refactor stepper support to enable easy configuration and support for multiple driver types.
 //  - Eliminate defining step count, and use homing to determine rotational steps which are stored in EEPROM.

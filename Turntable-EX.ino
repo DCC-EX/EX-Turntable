@@ -50,7 +50,7 @@ const int16_t sanitySteps = SANITY_STEPS;           // Define an arbitrary numbe
 const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
 int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
-bool homed = false;                                 // Flag to indicate if homing has been successful or not.
+uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
 const uint8_t homeSensorPin = 5;                    // Define pin 5 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
@@ -60,7 +60,7 @@ uint8_t ledState = 7;                               // Flag for the LED state: 4
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
 bool calibrating = false;                           // Flag to prevent other rotation activities during calibration.
-bool calibrationStarted = false;                    // Flag to allow delays during calibration process.
+uint8_t calibrationPhase = 0;                       // Flag for calibration phase.
 unsigned long calMillis = 0;                        // Required for non blocking calibration pauses.
 char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
 uint8_t eepromVersion = 1;                          // Version of stored EEPROM data.
@@ -125,10 +125,14 @@ void clearEEPROM() {
 }
 
 // Function to display the defined stepper motor config.
-void displayStepperConfig() {
-  Serial.print(F("Stepper motor configured for "));
-  Serial.print(fullTurnSteps);
-  Serial.println(F(" steps"));
+void displayTTEXConfig() {
+  if (fullTurnSteps == 0) {
+    Serial.println(F("Turntable-EX has not been calibrated yet"));
+  } else {
+    Serial.print(F("Turntable-EX has been calibrated for "));
+    Serial.print(fullTurnSteps);
+    Serial.println(F(" steps per revolution"));
+  }
 }
 
 // Function to define the stepper parameters.
@@ -146,7 +150,7 @@ void moveHome() {
 #endif
     stepper.setCurrentPosition(0);
     lastStep = 0;
-    homed = true;
+    homed = 1;
     Serial.println(F("Turntable homed successfully"));
 #ifdef DEBUG
     Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
@@ -164,7 +168,7 @@ void moveHome() {
     if (stepper.targetPosition() == lastTarget) {
       stepper.setCurrentPosition(0);
       lastStep = 0;
-      homed = true;
+      homed = 2;
       Serial.println(F("ERROR: Turntable failed to home, setting random home position"));
     } else {
       stepper.enableOutputs();
@@ -212,20 +216,20 @@ void receiveEvent(int received) {
       Serial.println(activity);
 #endif
       moveToPosition(steps, activity);
-    } else if (activity == 2 && !stepper.isRunning() && !calibrating) {
+    } else if (activity == 2 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Requested to home"));
 #endif
-      homed = false;
+      homed = 0;
       lastTarget = sanitySteps;
-    } else if (activity == 3 && !stepper.isRunning() && !calibrating) {
+    } else if (activity == 3 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Calibration requested"));
 #endif
       calibrating = true;
-      homed = false;
+      homed = 0;
       lastTarget = sanitySteps;
       clearEEPROM();
     } else if (activity > 3 && activity < 8) {
@@ -357,7 +361,7 @@ void processLED() {
 // - Perform second home rotation, set steps to currentPosition().
 // - Write steps to EEPROM.
 void calibration() {
-  if (calibrationStarted && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+  if (calibrationPhase == 2 && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
@@ -365,33 +369,31 @@ void calibration() {
     fullTurnSteps = stepper.currentPosition();
     halfTurnSteps = fullTurnSteps / 2;
     calibrating = false;
-    calibrationStarted = false;
+    calibrationPhase = 0;
     writeEEPROM(fullTurnSteps);
     Serial.print(F("CALIBRATION: Completed, storing full turn step count: "));
     Serial.println(fullTurnSteps);
-    homed = false;
+    homed = 0;
     lastTarget = sanitySteps;
-  } else if (!calibrationStarted && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+  } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
     stepper.stop();
     stepper.setCurrentPosition(0);
-    calibrationStarted = true;
+    calibrationPhase = 2;
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
-  // } else if (!calibrationStarted && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
-  //   moveToPosition(150, 0);
-  // } else if (!calibrationStarted && lastStep == 150) {
-  } else if (!calibrationStarted && !stepper.isRunning()) {
+  } else if (calibrationPhase == 0 && !stepper.isRunning() && homed == 1) {
     Serial.println(F("CALIBRATION: Phase 1, homing..."));
+    calibrationPhase = 1;
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
-  } else if (calibrationStarted && !stepper.isRunning() && stepper.currentPosition() == sanitySteps) {
+  } else if ((calibrationPhase == 2 || calibrationPhase == 1) && !stepper.isRunning() && stepper.currentPosition() == sanitySteps) {
     Serial.println(F("CALIBRATION: FAILED, could not home, could not determine step count"));
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
 #endif
     calibrating = false;
-    calibrationStarted = false;
+    calibrationPhase = 0;
   }
 }
 
@@ -423,7 +425,7 @@ void setup() {
   halfTurnSteps = fullTurnSteps / 2;
 
 // Display the configured stepper details
-  displayStepperConfig();
+  displayTTEXConfig();
 
 // Set up the stepper driver
   setupStepperDriver();
@@ -441,7 +443,7 @@ void setup() {
 
 void loop() {
 // If we haven't successfully homed yet, do it.
-  if (!homed) {
+  if (homed == 0) {
     moveHome();
   }
 
