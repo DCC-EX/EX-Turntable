@@ -36,41 +36,23 @@
 //  some controllers that are pin-compatible with an existing defined controller, and
 //  in those instances, no custom configuration would be required.
 // 
-#define STEPPER_CONTROLLER ULN2003
-
-/////////////////////////////////////////////////////////////////////////////////////
-//  Define the stepper motor in use according to those available:
-// 
-//  ULN2003COMBO  : 28BYJ-48 stepper with the ULN2003 (Default)
-//  NEMA17        : 
-//  NEMA23        :
-//  Other?        :
-// 
-//  NOTE: If you are using a different controller than those already defined, refer to
-//  the documentation to define the appropriate configuration variables. Note there are
-//  some controllers that are pin-compatible with an existing defined controller, and
-//  in those instances, no custom configuration would be required.
-// 
-#define STEPPER_MOTOR ULN2003COMBO
+#define STEPPER_DRIVER ULN2003_HALF_CW
+// #define STEPPER_DRIVER ULN2003_HALF_CCW
+// #define STEPPER_DRIVER ULN2003_FULL_CW
+// #define STEPPER_DRIVER ULN2003_FULL_CCW
+// #define STEPPER_DRIVER TWO_WIRE
+// #define STEPPER_DRIVER TWO_WIRE_INV
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
-// 
-//  If you need to adjust the full rotation step count after calibration, uncomment the
-//  following line and set the correct number here.
-// #define FULLSTEPS 1234
-// 
-//  The direction the stepper turns when homing, CLOCKWISE or COUNTER_CLOCKWISE.
-#define STEPPER_DIRECTION CLOCKWISE
-// 
+//
 //  Disable the stepper controller when idling, comment out to leave on. Note that this
 //  is handy to prevent controllers overheating, so this is a recommended setting.
 #define DISABLE_OUTPUTS_IDLE
 // 
 //  Define the acceleration and speed settings.
-#define STEPPER_MAX_SPEED 100     // Maximum possible speed the stepper will reach
+#define STEPPER_MAX_SPEED 200     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
-#define STEPPER_SPEED 100         // Constant speed for the stepper (eg. when homing)
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
@@ -80,13 +62,21 @@
 #define LED_SLOW 500
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  Define the delay between calibration positions in milliseconds (default 15000).
+//  ADVANCED OPTIONS
+//  In normal circumstances, the settings below should not need to be adjusted unless
+//  requested by support ticket, or if Tinkerers or Engineers are working with alternative
+//  stepper drivers and motors.
 // 
-//  Depending on the speed settings, this may need to be longer or shorter to allow
-//  time to validate the positions are correct.
-#define CALIBRATION_DELAY 15000
-
-/////////////////////////////////////////////////////////////////////////////////////
 //  Enable debug outputs if required during troubleshooting.
 // 
 // #define DEBUG
+// 
+//  Define the maximum number of steps homing and calibration will perform before marking
+//  these activities as failed. This step count must exceed a single full rotation in order
+//  to be useful.
+// #define SANITY_STEPS 10000
+// 
+//  Define the minimum number of steps the turntable needs to move before the homing sensor
+//  deactivates, which is required during the calibration sequence. For high step count
+//  setups, this may need to be increased.
+// #define HOME_SENSITIVITY 150

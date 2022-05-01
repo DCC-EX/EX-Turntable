@@ -1,22 +1,24 @@
 # Turntable-EX
 
-**Note:** This code is currently considered experimental and under rapid development. This README is aimed at DCC++ EX team members who wish to help with development and testing prior to release.
+**Note: This code is currently considered experimental and under rapid development. This README is aimed at DCC++ EX team members who wish to help with development and testing prior to release.**
 
-Turntable-EX is a fully integrated turntable controller, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
+**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page. Modification comments are included within the library.
+
+Turntable-EX is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
 
 The integration includes:
 
 - I2C device driver
 - EX-RAIL automation support
 - Debug/test command (handy for tuning step positions)
-- Out-of-the-box support for several common stepper controllers
+- Out-of-the-box support for several common stepper motor drivers
 - DCC signal phase switching to align bridge track phase with layout phase
 
 # What you need for Turntable-EX
 
 - An Arduino microcontroller (tested on Nano V3, both old and new bootloader, an Uno R3 should also work)
-- A supported stepper motor controller and stepper motor
-- A hall effect (or similar) sensor for homing
+- A supported stepper motor driver and stepper motor
+- A digital hall effect (or similar) sensor for homing (eg. A3144 or 44E)
 - A dual relay board (or similar) if you wish to use the phase switching capability
 - A turntable capable of being driven by a stepper motor
 
@@ -47,23 +49,40 @@ void halSetup() {
 
 Like other DCC++ EX code, config.example.h is provided and will be utilised automatically if a specific config.h is not defined.
 
-If nothing is changed in Turntable-EX, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and a dual relay board for phase/polarity switching of the track on the turntable bridge.
+If nothing is changed in Turntable-EX, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and an active-high dual relay board for phase/polarity switching of the track on the turntable bridge.
 
-Other common stepper drivers/motors will be supported in due course once they've been able to be tested. These will include A4988, DRV8825, and likely TMC208 drivers, all with a NEMA17 stepper.
+Other common stepper drivers and motors are supported, and if an alternative driver or stepper is listed as "pin compatible" with one of these, it will likely also work with the caveat that if it hasn't been tested, that cannot be confirmed. The list of currently tested and supported stepper drivers and motors is:
+
+Driver | Stepper
+----|---------
+ULN2003 | 28BYJ-48
+A4988 | NEMA17
+DRV8825 | NEMA17
 
 These pins are in use:
 
 Pin | Function
 ----|---------
-A0 | Stepper pin 1
-A1 | Stepper pin 2
-A2 | Stepper pin 3
+A0 | Stepper pin 1 (note for 2 wire drivers, this is the "step" pin)
+A1 | Stepper pin 2 (note for 2 wire drivers, this is the "dir" pin)
+A2 | Stepper pin 3 (note for 2 wire drivers, this is the "enable" pin)
 A3 | Stepper pin 4
 D3 | Relay 1
 D4 | Relay 2
 D5 | Hall effect sensor
 D6 | LED output pin
 D7 | Accessory output pin
+
+These pins have been reserved for the potential addition of a GC9A01 round display using SPI:
+
+Pin | Function
+----|---------
+D8 | Backlight (BL)
+D9 | Reset (RST)
+D10 | Data/command (DC)
+D11 | SPI data (DIN/MOSI)
+D12 | Chip select (CS)
+D13 | SPI clock (SCK/CLK)
 
 ## Note on hall effect homing sensors and phase switching relays
 
@@ -170,43 +189,18 @@ ALIAS(TTRoute7, 5185)
 
 # Calibration sequence
 
-The calibration sequence has been added to validate that the defined number of steps for a full 360 degree rotation is accurate.
+The calibration sequence is required to determine the number of steps to complete a single 360 degree rotation of the turntable. This avoids having to define step counts in advance, and instead enables an easy, automatic method that is "plug and play" for Conductors. This step value is then stored in the EEPROM for reference.
 
-The sequence is activated by ```<D TT 600 0 3>``` or ```MOVETT(600, 0, Calibrate)```.
+When Turntable-EX is first installed and started, it will initiate the calibration sequence automatically and display the stored step count in the serial console, as well as writing this value to the EEPROM.
 
-To calibrate your turntable, mark the "home" position as 0/360 degrees, and put a mark at 180 degrees.
+The calibration sequence will first initiate a rotation to home the turntable (it doesn't matter where it is positioned at this point), and will then initiate a second rotation which is when the step counting occurs. Messages are written to the serial console to reflect the various calibration steps.
 
-When initiating the calibration sequence, the turntable will automatically cycle through these positions, pausing at each to allow validation that it is aligning correctly with those positions.
-
-The sequence will proceed as follows:
-
-- The turntable will first move to 10% of the defined full step count and then home to ensure the process starts accurately at the home position.
-- It will then move to 1/2 of the defined full step count and pause, which should align with the 180 degree mark.
-- It will then move to the defined full step count and pause, which should align with the 0/360 degree mark.
-- Finally, it will move to 5% of the defined full step count, and again home to ensure it returns to the home position.
-
-If the alignment is not as expected, adjust the step count by uncommenting the below line in "config.h" and setting the correct number of steps:
-
-```
-// #define FULLSTEPS 1234
-```
-
-If the correct number of steps for a 360 degree rotation should be 2000, the resultant line should look like this:
-
-```
-#define FULLSTEPS 2000
-```
-
-If the pauses at each position are too long or too short to assess the alignment, update the following line in "config.h" to increase or decrease the pause time, noting that this is in milliseconds (the default of 15000 = 15 seconds). Note that the delay time includes the amount of time for the stepper to move from position to position.
-
-```
-#define CALIBRATION_DELAY 15000
-```
+At any time, calibration can be performed again using the "Calibrate" (diagnostic activity 3) command, which will erase the EEPROM contents and initiate the sequence.
 
 # To do/future
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
 
-- Add extra supported common steppers ([Issue #6](https://github.com/DCC-EX/Turntable-EX/issues/6))
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
+- Add support for traversers and turntables that do not rotate 360 degrees ([Issue #41](https://github.com/DCC-EX/Turntable-EX/issues/41))
