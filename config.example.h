@@ -62,13 +62,21 @@
 #define LED_SLOW 500
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  Define the delay between calibration positions in milliseconds (default 15000).
+//  ADVANCED OPTIONS
+//  In normal circumstances, the settings below should not need to be adjusted unless
+//  requested by support ticket, or if Tinkerers or Engineers are working with alternative
+//  stepper drivers and motors.
 // 
-//  Depending on the speed settings, this may need to be longer or shorter to allow
-//  time to validate the positions are correct.
-#define CALIBRATION_DELAY 15000
-
-/////////////////////////////////////////////////////////////////////////////////////
 //  Enable debug outputs if required during troubleshooting.
 // 
 // #define DEBUG
+// 
+//  Define the maximum number of steps homing and calibration will perform before marking
+//  these activities as failed. This step count must exceed a single full rotation in order
+//  to be useful.
+// #define SANITY_STEPS 10000
+// 
+//  Define the minimum number of steps the turntable needs to move before the homing sensor
+//  deactivates, which is required during the calibration sequence. For high step count
+//  setups, this may need to be increased.
+// #define HOME_SENSITIVITY 150

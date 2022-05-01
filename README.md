@@ -2,7 +2,7 @@
 
 **Note: This code is currently considered experimental and under rapid development. This README is aimed at DCC++ EX team members who wish to help with development and testing prior to release.**
 
-**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page.
+**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page. Modification comments are included within the library.
 
 Turntable-EX is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
 
@@ -189,38 +189,13 @@ ALIAS(TTRoute7, 5185)
 
 # Calibration sequence
 
-The calibration sequence has been added to validate that the defined number of steps for a full 360 degree rotation is accurate.
+The calibration sequence is required to determine the number of steps to complete a single 360 degree rotation of the turntable. This avoids having to define step counts in advance, and instead enables an easy, automatic method that is "plug and play" for Conductors. This step value is then stored in the EEPROM for reference.
 
-The sequence is activated by ```<D TT 600 0 3>``` or ```MOVETT(600, 0, Calibrate)```.
+When Turntable-EX is first installed and started, it will initiate the calibration sequence automatically and display the stored step count in the serial console, as well as writing this value to the EEPROM.
 
-To calibrate your turntable, mark the "home" position as 0/360 degrees, and put a mark at 180 degrees.
+The calibration sequence will first initiate a rotation to home the turntable (it doesn't matter where it is positioned at this point), and will then initiate a second rotation which is when the step counting occurs. Messages are written to the serial console to reflect the various calibration steps.
 
-When initiating the calibration sequence, the turntable will automatically cycle through these positions, pausing at each to allow validation that it is aligning correctly with those positions.
-
-The sequence will proceed as follows:
-
-- The turntable will first move to 10% of the defined full step count and then home to ensure the process starts accurately at the home position.
-- It will then move to 1/2 of the defined full step count and pause, which should align with the 180 degree mark.
-- It will then move to the defined full step count and pause, which should align with the 0/360 degree mark.
-- Finally, it will move to 5% of the defined full step count, and again home to ensure it returns to the home position.
-
-If the alignment is not as expected, adjust the step count by uncommenting the below line in "config.h" and setting the correct number of steps:
-
-```
-// #define FULLSTEPS 1234
-```
-
-If the correct number of steps for a 360 degree rotation should be 2000, the resultant line should look like this:
-
-```
-#define FULLSTEPS 2000
-```
-
-If the pauses at each position are too long or too short to assess the alignment, update the following line in "config.h" to increase or decrease the pause time, noting that this is in milliseconds (the default of 15000 = 15 seconds). Note that the delay time includes the amount of time for the stepper to move from position to position.
-
-```
-#define CALIBRATION_DELAY 15000
-```
+At any time, calibration can be performed again using the "Calibrate" (diagnostic activity 3) command, which will erase the EEPROM contents and initiate the sequence.
 
 # To do/future
 
@@ -228,3 +203,4 @@ There are a number of items remaining to be completed yet, as well as some extra
 
 - Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
 - Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
+- Add support for traversers and turntables that do not rotate 360 degrees ([Issue #41](https://github.com/DCC-EX/Turntable-EX/issues/41))
