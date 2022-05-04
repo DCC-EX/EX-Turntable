@@ -321,10 +321,6 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
 
 // If phase switching is enabled, function to set it.
 void setPhase(uint8_t phase) {
-#ifdef DEBUG
-  Serial.print(F("DEBUG: Setting relay outputs for relay 1/2: "));
-  Serial.println(phase);
-#endif
 #if RELAY_ACTIVE_STATE == HIGH
   digitalWrite(relay1Pin, phase);
   digitalWrite(relay2Pin, phase);
@@ -361,6 +357,7 @@ void processLED() {
 // - Perform second home rotation, set steps to currentPosition().
 // - Write steps to EEPROM.
 void calibration() {
+  setPhase(0);
   if (calibrationPhase == 2 && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
@@ -415,6 +412,9 @@ void setup() {
 // Configure relay output pins
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
+
+// Ensure relays are inactive on startup
+  setPhase(0);
 
 // Configure LED and accessory output pins
   pinMode(ledPin, OUTPUT);
