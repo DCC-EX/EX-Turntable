@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 
+// 0.2.2 includes:
+//  - Bug fix where active low relays are activated during the calibration sequence.
 // 0.2.1 includes:
 //  - Bug fix where failed homing puts calibration into infinite loop.
 //  - Calibration no longer initiated if homing fails.
