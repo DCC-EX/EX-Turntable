@@ -24,12 +24,15 @@
 #define RELAY_ACTIVE_STATE HIGH
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  Define the stepper controller in use according to those available:
+//  Define the stepper controller in use according to those available below, refer to the
+//  documentation for further details on which to select for your application.
 // 
-//  ULN2003   : Commonly paired with the 28BYJ-48 unipolar stepper motor (Default)
-//  A4988     : Common, inexpensive controller for NEMA17 and other steppers
-//  DRV8825   : Common A4988 alternative, somewhat quieter
-//  TMC2208   : Very quiet stepper control
+//  ULN2003_HALF_CW                 : ULN2003 in half step mode, clockwise homing/calibration
+//  ULN2003_HALF_CCW                : ULN2003 in half step mode, counter clockwise homing/calibration
+//  STEPPER_DRIVER ULN2003_FULL_CW  : ULN2003 in full step mode, clockwise homing/calibration
+//  STEPPER_DRIVER ULN2003_FULL_CCW : ULN2003 in full step mode, counter clockwise homing/calibration
+//  STEPPER_DRIVER TWO_WIRE         : Two wire drivers (eg. A4988, DRV8825)
+//  STEPPER_DRIVER TWO_WIRE_INV     : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
