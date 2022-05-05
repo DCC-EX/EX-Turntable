@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.2.2"
+#define VERSION "0.2.3"
 
+// 0.2.3 includes:
+//  - Bug fix where two wire drivers were not enabling outputs during calibration, and stepper wasn't rotating.
 // 0.2.2 includes:
 //  - Bug fix where active low relays are activated during the calibration sequence.
 // 0.2.1 includes:
