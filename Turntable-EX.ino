@@ -377,11 +377,13 @@ void calibration() {
     stepper.stop();
     stepper.setCurrentPosition(0);
     calibrationPhase = 2;
+    stepper.enableOutputs();
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
   } else if (calibrationPhase == 0 && !stepper.isRunning() && homed == 1) {
     Serial.println(F("CALIBRATION: Phase 1, homing..."));
     calibrationPhase = 1;
+    stepper.enableOutputs();
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
   } else if ((calibrationPhase == 2 || calibrationPhase == 1) && !stepper.isRunning() && stepper.currentPosition() == sanitySteps) {
@@ -401,6 +403,8 @@ void setup() {
   Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
   Serial.print(F("Turntable-EX version "));
   Serial.println(VERSION);
+  Serial.print(F("Available at I2C address 0x"));
+  Serial.println(I2C_ADDRESS, HEX);
 
 // Configure homing sensor pin
 #if HOME_SENSOR_ACTIVE_STATE == LOW
