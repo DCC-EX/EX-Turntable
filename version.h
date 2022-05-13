@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.2.3"
+#define VERSION "0.3.0-Beta"
 
+// 0.3.0-Beta:
+//  - No actual changes, resetting version number for intial Beta release.
 // 0.2.3 includes:
 //  - Bug fix where two wire drivers were not enabling outputs during calibration, and stepper wasn't rotating.
 // 0.2.2 includes:
