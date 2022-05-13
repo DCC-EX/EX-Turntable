@@ -1,6 +1,6 @@
 # Turntable-EX
 
-**Note: This code is currently considered experimental and under rapid development. This README is aimed at DCC++ EX team members who wish to help with development and testing prior to release.**
+**Note: This is a Beta relase of Turntable-EX, when performing Beta testing, please follow the process on the Turntable-EX overview page.**
 
 *For the full documentation relating to Turntable-EX, please refer to the [DCC++ EX Website](https://dcc-ex.com/)*
 
