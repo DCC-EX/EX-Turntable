@@ -18,6 +18,11 @@ jobs:
   track_pr:
     runs-on: ubuntu-latest
     steps:
+      -name: Add labels
+        uses: andymckay/labeler@master
+        with:
+          add-labels: "Turntable-EX"
+          
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@36464acb844fc53b9b8b2401da68844f6b05ebb0
@@ -123,8 +128,3 @@ jobs:
           #       }
           #     }
           #   }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.REVIEW_OPTION_ID }} -f date_field=$DATE_FIELD_ID -f date_value=$DATE --silent
-
-      -name: Add labels
-        uses: andymckay/labeler@master
-        with:
-          add-labels: "Turntable-EX"
