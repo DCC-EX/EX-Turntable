@@ -61,7 +61,7 @@ jobs:
               }
             }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
 
-      -name: Add labels
-        uses: andymckay/labeler@master
-        with:
-          add-labels: "Turntable-EX"
+      # -name: Add labels
+      #   uses: andymckay/labeler@master
+      #   with:
+      #     add-labels: "Turntable-EX"
