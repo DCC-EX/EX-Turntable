@@ -16,6 +16,11 @@ jobs:
   add_to_project:
     runs-on: ubuntu-latest
     steps:
+      -name: Add labels
+       uses: andymckay/labeler@master
+       with:
+        add-labels: "Turntable-EX"
+      
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@36464acb844fc53b9b8b2401da68844f6b05ebb0
@@ -60,8 +65,3 @@ jobs:
                 }
               }
             }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
-
-      # -name: Add labels
-      #   uses: andymckay/labeler@master
-      #   with:
-      #     add-labels: "Turntable-EX"
