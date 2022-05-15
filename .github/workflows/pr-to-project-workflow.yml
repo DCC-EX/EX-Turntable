@@ -18,10 +18,10 @@ jobs:
   track_pr:
     runs-on: ubuntu-latest
     steps:
-      -name: Add labels
-       uses: andymckay/labeler@master
-       with:
-        add-labels: "Turntable-EX"
+      - name: Add labels
+        uses: andymckay/labeler@master
+        with:
+          add-labels: "Turntable-EX"
 
       - name: Generate token
         id: generate_token
