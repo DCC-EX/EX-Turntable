@@ -2,7 +2,7 @@
 name: Beta Test Results
 about: Use this template to submit the results of Turntable-EX Beta testing
 title: "Beta Test Results: "
-labels: ["Beta Testing"]
+labels: ["Beta Testing","Regression Tested"]
 ---
 
 <!--

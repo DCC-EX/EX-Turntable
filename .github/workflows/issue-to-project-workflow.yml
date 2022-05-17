@@ -51,6 +51,10 @@ jobs:
             }' -f org=$ORG -F number=$PROJECT_NUMBER > project_data.json
 
           echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
+          echo 'BACKLOG_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Backlog") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'TO_DO_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="To Do") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'REVIEW_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Needs Review") |.id' project_data.json) >> $GITHUB_ENV
  
       - name: Add issue to project
         env:
@@ -65,3 +69,52 @@ jobs:
                 }
               }
             }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
+          echo 'ITEM_ID='$item_id >> $GITHUB_ENV
+      
+      - name: Set status - To Do
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        if: ${{ github.event.label.name == 'Bug' }} || ${{ github.event.label.name == 'Support Request' }}
+        run: |
+          gh api graphql -f query='
+            mutation(
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ){
+              set_status: updateProjectNextItemField(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: $status_value
+              }) {
+                projectNextItem {
+                  id
+                }
+              }
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TO_DO_OPTION_ID }} --silent
+
+      - name: Set status - Needs Review
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        if: ${{ github.event.label.name == 'Unit Tested' }} || ${{ github.event.label.name == 'Regression Tested' }} || ${{ github.event.label.name == 'Needs Review' }}
+        run: |
+          gh api graphql -f query='
+            mutation(
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ){
+              set_status: updateProjectNextItemField(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: $status_value
+              }) {
+                projectNextItem {
+                  id
+                }
+              }
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.REVIEW_OPTION_ID }} --silent
