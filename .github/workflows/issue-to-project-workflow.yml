@@ -74,7 +74,7 @@ jobs:
       - name: Set status - To Do
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        if: ${{ github.event.label.name == 'Bug' }} || ${{ github.event.label.name == 'Support Request' }}
+        if: contains(github.event.*.labels.*.name, 'Bug') || contains(github.event.*.labels.*.name, 'Support Request')
         run: |
           gh api graphql -f query='
             mutation(
@@ -98,7 +98,7 @@ jobs:
       - name: Set status - Needs Review
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        if: ${{ github.event.label.name == 'Unit Tested' }} || ${{ github.event.label.name == 'Regression Tested' }} || ${{ github.event.label.name == 'Needs Review' }}
+        if: contains(github.event.*.labels.*.name, 'Unit Tested') || contains(github.event.*.labels.*.name, 'Regression Tested') || contains(github.event.*.labels.*.name, 'Needs Review')
         run: |
           gh api graphql -f query='
             mutation(
