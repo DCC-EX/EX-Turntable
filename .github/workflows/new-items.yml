@@ -1,17 +1,24 @@
-# GitHub Workflow to add issues to the DCC-EX project.
-#
-# This workflow applies to all issues being opened in a repository and this workflow should be
-# associated with all repositories.
-# Note for private repositories, these will require local secrets, public repositories will use
-# the organisation secrets.
-#
-# Refer to https://github.com/DCC-EX/Support-Planning for documentation.
+# This workflow is to be used for all repositories to integrate with the peteGSX-Projects Beta Project.
+# It will add all issues and pull requests for a repository to the project, and put in the correct status.
+# 
+# Ensure "REPO_LABEL" is updated with the correct label for the repo stream of work.
+name: Add Issue or Pull Request to Project
 
-name: Add Issue to Project
+env:
+  REPO_LABEL: ${{ secrets.PROJECT_STREAM_LABEL }}
+  PROJECT_NUMBER: 7
+  ORG: DCC-EX
+
 on:
   issues:
     types:
       - opened
+  pull_request:
+    types:
+      - ready_for_review
+      - opened
+      - review_requested
+
 jobs:
   add_to_project:
     runs-on: ubuntu-latest
@@ -19,7 +26,7 @@ jobs:
       - name: Add labels
         uses: andymckay/labeler@master
         with:
-          add-labels: "Turntable-EX"
+          add-labels: ${{ env.REPO_LABEL }}
       
       - name: Generate token
         id: generate_token
@@ -31,8 +38,6 @@ jobs:
       - name: Get project data
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          ORG: DCC-EX
-          PROJECT_NUMBER: 7
         run: |
           gh api graphql -f query='
             query($org: String!, $number: Int!) {
@@ -54,27 +59,45 @@ jobs:
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
           echo 'BACKLOG_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Backlog") |.id' project_data.json) >> $GITHUB_ENV
           echo 'TO_DO_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="To Do") |.id' project_data.json) >> $GITHUB_ENV
-          echo 'REVIEW_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Needs Review") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'NEEDS_REVIEW_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Needs Review") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'IN_PROGRESS_OPTION_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="In Progress") |.id' project_data.json) >> $GITHUB_ENV
  
       - name: Add issue to project
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          ISSUE_ID: ${{ github.event.issue.node_id }}
+          ITEM_ID: ${{ github.event.issue.node_id }}
+        if: github.event_name == 'issues'
         run: |
-          item_id="$( gh api graphql -f query='
-            mutation($project:ID!, $issue:ID!) {
-              addProjectNextItem(input: {projectId: $project, contentId: $issue}) {
+          project_item_id="$( gh api graphql -f query='
+            mutation($project:ID!, $item:ID!) {
+              addProjectNextItem(input: {projectId: $project, contentId: $item}) {
                 projectNextItem {
                   id
                 }
               }
-            }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
-          echo 'ITEM_ID='$item_id >> $GITHUB_ENV
-      
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
+          echo 'PROJECT_ITEM_ID='$project_item_id >> $GITHUB_ENV
+
+      - name: Add PR to project
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ITEM_ID: ${{ github.event.pull_request.node_id }}
+        if: github.event_name == 'pull_request'
+        run: |
+          project_item_id="$( gh api graphql -f query='
+            mutation($project:ID!, $item:ID!) {
+              addProjectNextItem(input: {projectId: $project, contentId: $item}) {
+                projectNextItem {
+                  id
+                }
+              }
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
+          echo 'PROJECT_ITEM_ID='$project_item_id >> $GITHUB_ENV
+
       - name: Set status - To Do
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        if: contains(github.event.*.labels.*.name, 'Bug') || contains(github.event.*.labels.*.name, 'Support Request')
+        if: github.event_name == 'issues' && (contains(github.event.*.labels.*.name, 'Bug') || contains(github.event.*.labels.*.name, 'Support Request'))
         run: |
           gh api graphql -f query='
             mutation(
@@ -93,12 +116,12 @@ jobs:
                   id
                 }
               }
-            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TO_DO_OPTION_ID }} --silent
+            }' -f project=$PROJECT_ID -f item=$PROJECT_ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TO_DO_OPTION_ID }} --silent
 
-      - name: Set status - Needs Review
+      - name: Set status - Review
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        if: contains(github.event.*.labels.*.name, 'Unit Tested') || contains(github.event.*.labels.*.name, 'Regression Tested') || contains(github.event.*.labels.*.name, 'Needs Review')
+        if: github.event_name == 'issues' && (contains(github.event.*.labels.*.name, 'Unit Tested') || contains(github.event.*.labels.*.name, 'Regression Tested') || contains(github.event.*.labels.*.name, 'Needs Review')) || github.event_name == 'pull_request'
         run: |
           gh api graphql -f query='
             mutation(
@@ -117,4 +140,4 @@ jobs:
                   id
                 }
               }
-            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.REVIEW_OPTION_ID }} --silent
+            }' -f project=$PROJECT_ID -f item=$PROJECT_ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.NEEDS_REVIEW_OPTION_ID }} --silent
