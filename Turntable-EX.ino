@@ -27,6 +27,10 @@
 #include "standard_steppers.h"
 #include "version.h"
 
+// Ensure AUTO and MANUAL phase switching has a value to test.
+#define AUTO 1
+#define MANUAL 0
+
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
@@ -43,9 +47,24 @@
 #ifndef HOME_SENSITIVITY
 #define HOME_SENSITIVITY 150                        // Define homing sensitivity if not in config.h.
 #endif
+
+#ifndef PHASE_SWITCHING
+#define PHASE_SWITCHING AUTO                        // Define automatic phase switching if not in config.h
+#endif
+
+#ifndef PHASE_SWITCH_START_ANGLE
+#define PHASE_SWITCH_START_ANGLE 45                 // Define phase switch at 45 degrees if not in config.h
+#endif
+
+#ifndef PHASE_SWITCH_STOP_ANGLE
+#define PHASE_SWITCH_STOP_ANGLE 225                 // Define phase revert at 225 degrees if not in config.h
+#endif
+
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
 int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
+int16_t phaseSwitchStartSteps;                      // Defines the step count at which phase should automatically invert.
+int16_t phaseSwitchStopSteps;                       // Defines the step count at which phase should automatically revert.
 const int16_t sanitySteps = SANITY_STEPS;           // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
 const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
@@ -319,7 +338,7 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   }
 }
 
-// If phase switching is enabled, function to set it.
+// Function to set phase.
 void setPhase(uint8_t phase) {
 #if RELAY_ACTIVE_STATE == HIGH
   digitalWrite(relay1Pin, phase);
@@ -396,6 +415,16 @@ void calibration() {
   }
 }
 
+void processAutoPhaseSwitch() {
+  if (PHASE_SWITCH_START_ANGLE == 0 || PHASE_SWITCH_START_ANGLE == 360 || PHASE_SWITCH_STOP_ANGLE == 0 || PHASE_SWITCH_STOP_ANGLE == 360 || PHASE_SWITCH_STOP_ANGLE <= PHASE_SWITCH_START_ANGLE) {
+#define PHASE_SWITCH_START_ANGLE 45
+#define PHASE_SWITCH_START_ANGLE 225
+  } else {
+    phaseSwitchStartSteps = fullTurnSteps / 360 * PHASE_SWITCH_START_ANGLE;
+    phaseSwitchStopSteps = fullTurnSteps / 360 * PHASE_SWITCH_STOP_ANGLE;
+  }
+}
+
 void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
@@ -427,6 +456,11 @@ void setup() {
 // Read steps from EEPROM
   fullTurnSteps = getSteps();
   halfTurnSteps = fullTurnSteps / 2;
+
+#if PHASE_SWITCHING == AUTO
+// Calculate phase invert/revert steps
+  processAutoPhaseSwitch();
+#endif
 
 // Display the configured stepper details
   displayTTEXConfig();

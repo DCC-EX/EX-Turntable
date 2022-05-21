@@ -24,6 +24,33 @@
 #define RELAY_ACTIVE_STATE HIGH
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  Define phase switching behaviour.
+// 
+//  PHASE_SWITCHING options:
+//  AUTO    : When defined, phase will invert at PHASE_SWITCH_START_ANGLE, and revert
+//            at PHASE_SWITCH_STOP_ANGLE (see below).
+//  MANUAL  : When defined, phase will only invert using the Turn_PInvert command.
+//  
+//  Refer to the documentation for the full explanation on phase switching, and when
+//  it is recommended to change these options.
+// 
+#define PHASE_SWITCHING AUTO
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Define automatic phase switching angles.
+// 
+//  If PHASE_SWITCHING is set to AUTO (see above), then when the turntable rotates
+//  PHASE_SWITCH_START_ANGLE degrees from home, the phase will automatically invert.
+//  Once the turntable reaches PHASE_SWITCH_STOP_ANGLE, the phase will automatically
+//  revert.
+// 
+//  Refer to the documentation for the full explanation on phase switching, and how to
+//  define start and stop angles relevant for your layout.
+// 
+#define PHASE_SWITCH_START_ANGLE 45
+#define PHASE_SWITCH_STOP_ANGLE 225
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the stepper controller in use according to those available below, refer to the
 //  documentation for further details on which to select for your application.
 // 
