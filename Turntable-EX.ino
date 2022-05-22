@@ -52,12 +52,8 @@
 #define PHASE_SWITCHING AUTO                        // Define automatic phase switching if not in config.h
 #endif
 
-#ifndef PHASE_SWITCH_START_ANGLE
-#define PHASE_SWITCH_START_ANGLE 45                 // Define phase switch at 45 degrees if not in config.h
-#endif
-
-#ifndef PHASE_SWITCH_STOP_ANGLE
-#define PHASE_SWITCH_STOP_ANGLE 225                 // Define phase revert at 225 degrees if not in config.h
+#ifndef PHASE_SWITCH_ANGLE
+#define PHASE_SWITCH_ANGLE 45                       // Define phase switch at 45 degrees if not in config.h
 #endif
 
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
@@ -152,6 +148,16 @@ void displayTTEXConfig() {
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
   }
+#if PHASE_SWITCHING == AUTO
+  Serial.print(F("Automatic phase switching enabled at "));
+  Serial.print(PHASE_SWITCH_ANGLE);
+  Serial.println(F(" degrees"));
+  Serial.print(F("Phase will switch at "));
+  Serial.print(phaseSwitchStartSteps);
+  Serial.print(F(" steps from home, and revert at "));
+  Serial.print(phaseSwitchStopSteps);
+  Serial.println(F(" steps from home"));
+#endif
 }
 
 // Function to define the stepper parameters.
@@ -322,6 +328,13 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.print(F(" - moving "));
     Serial.print(moveSteps);
     Serial.println(F(" steps"));
+#if PHASE_SWITCHING == AUTO
+    if ((steps >= 0 && steps < phaseSwitchStartSteps) || (steps <= fullTurnSteps && steps >= phaseSwitchStopSteps)) {
+      phaseSwitch = 0;
+    } else {
+      phaseSwitch = 1;
+    }
+#endif
     Serial.print(F("Setting phase switch flag to: "));
     Serial.println(phaseSwitch);
     setPhase(phaseSwitch);
@@ -384,6 +397,9 @@ void calibration() {
 #endif
     fullTurnSteps = stepper.currentPosition();
     halfTurnSteps = fullTurnSteps / 2;
+#if PHASE_SWITCHING == AUTO
+    processAutoPhaseSwitch();
+#endif
     calibrating = false;
     calibrationPhase = 0;
     writeEEPROM(fullTurnSteps);
@@ -391,6 +407,7 @@ void calibration() {
     Serial.println(fullTurnSteps);
     homed = 0;
     lastTarget = sanitySteps;
+    displayTTEXConfig();
   } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
     stepper.stop();
@@ -416,13 +433,14 @@ void calibration() {
 }
 
 void processAutoPhaseSwitch() {
-  if (PHASE_SWITCH_START_ANGLE == 0 || PHASE_SWITCH_START_ANGLE == 360 || PHASE_SWITCH_STOP_ANGLE == 0 || PHASE_SWITCH_STOP_ANGLE == 360 || PHASE_SWITCH_STOP_ANGLE <= PHASE_SWITCH_START_ANGLE) {
-#define PHASE_SWITCH_START_ANGLE 45
-#define PHASE_SWITCH_START_ANGLE 225
-  } else {
-    phaseSwitchStartSteps = fullTurnSteps / 360 * PHASE_SWITCH_START_ANGLE;
-    phaseSwitchStopSteps = fullTurnSteps / 360 * PHASE_SWITCH_STOP_ANGLE;
+  if (PHASE_SWITCH_ANGLE == 0 || PHASE_SWITCH_ANGLE == 360 || PHASE_SWITCH_ANGLE + 180 == 360) {
+    Serial.print(F("ERROR: The defined phase switch angle of "));
+    Serial.print(PHASE_SWITCH_ANGLE);
+    Serial.println(F(" degrees is invalid, setting to default 45 degrees"));
+#define PHASE_SWITCH_ANGLE 45
   }
+  phaseSwitchStartSteps = fullTurnSteps / 360 * PHASE_SWITCH_ANGLE;
+  phaseSwitchStopSteps = fullTurnSteps / 360 * (PHASE_SWITCH_ANGLE + 180);
 }
 
 void setup() {

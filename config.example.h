@@ -37,18 +37,17 @@
 #define PHASE_SWITCHING AUTO
 
 /////////////////////////////////////////////////////////////////////////////////////
-//  Define automatic phase switching angles.
+//  Define automatic phase switching angle.
 // 
 //  If PHASE_SWITCHING is set to AUTO (see above), then when the turntable rotates
-//  PHASE_SWITCH_START_ANGLE degrees from home, the phase will automatically invert.
-//  Once the turntable reaches PHASE_SWITCH_STOP_ANGLE, the phase will automatically
+//  PHASE_SWITCH_ANGLE degrees from home, the phase will automatically invert.
+//  Once the turntable reaches a further 180 degrees, the phase will automatically
 //  revert.
 // 
 //  Refer to the documentation for the full explanation on phase switching, and how to
-//  define start and stop angles relevant for your layout.
+//  define the angle that's relevant for your layout.
 // 
-#define PHASE_SWITCH_START_ANGLE 45
-#define PHASE_SWITCH_STOP_ANGLE 225
+#define PHASE_SWITCH_ANGLE 45
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the stepper controller in use according to those available below, refer to the
