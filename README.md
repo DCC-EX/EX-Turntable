@@ -99,6 +99,10 @@ Adjust these lines in "config.h" to suit:
 #define RELAY_ACTIVE_STATE HIGH
 ```
 
+# Automatic phase switching
+
+As of version 0.3.1-Beta, Turntable-EX supports automatic phase switching as the default behaviour, based on a defined number of degrees from home (default, 45 degrees). This simplifies phase switching for Conductor level users, and will automatically revert the phase 180 degrees later. Manual phase switching via the Turntable-EX control commands is still supported and will not be deprecated.
+
 # Turntable-EX control commands
 
 The turntable is controlled by sending the desired position defined as the number of steps from home, and an activity flag.

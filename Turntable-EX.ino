@@ -157,6 +157,8 @@ void displayTTEXConfig() {
   Serial.print(F(" steps from home, and revert at "));
   Serial.print(phaseSwitchStopSteps);
   Serial.println(F(" steps from home"));
+#else
+  Serial.println(F("Manual phase switching enabled"));
 #endif
 }
 
@@ -432,16 +434,21 @@ void calibration() {
   }
 }
 
+#if PHASE_SWITCHING == AUTO
 void processAutoPhaseSwitch() {
-  if (PHASE_SWITCH_ANGLE == 0 || PHASE_SWITCH_ANGLE == 360 || PHASE_SWITCH_ANGLE + 180 == 360) {
+  if (PHASE_SWITCH_ANGLE + 180 >= 360) {
     Serial.print(F("ERROR: The defined phase switch angle of "));
     Serial.print(PHASE_SWITCH_ANGLE);
     Serial.println(F(" degrees is invalid, setting to default 45 degrees"));
-#define PHASE_SWITCH_ANGLE 45
   }
+#if PHASE_SWITCH_ANGLE + 180 >= 360
+#undef PHASE_SWITCH_ANGLE
+#define PHASE_SWITCH_ANGLE 45
+#endif
   phaseSwitchStartSteps = fullTurnSteps / 360 * PHASE_SWITCH_ANGLE;
   phaseSwitchStopSteps = fullTurnSteps / 360 * (PHASE_SWITCH_ANGLE + 180);
 }
+#endif
 
 void setup() {
 // Basic setup, display what this is.
