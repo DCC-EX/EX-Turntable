@@ -322,8 +322,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     int16_t moveSteps;
     Serial.print(F("Position steps: "));
     Serial.print(steps);
+#if PHASE_SWITCHING == AUTO
+    Serial.print(F(", Auto phase switch"));
+#else
     Serial.print(F(", Phase switch flag: "));
     Serial.print(phaseSwitch);
+#endif
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
     } else if ((steps - lastStep) < -halfTurnSteps) {
