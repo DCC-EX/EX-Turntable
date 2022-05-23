@@ -27,6 +27,10 @@
 #include "standard_steppers.h"
 #include "version.h"
 
+// Ensure AUTO and MANUAL phase switching has a value to test.
+#define AUTO 1
+#define MANUAL 0
+
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
@@ -43,9 +47,20 @@
 #ifndef HOME_SENSITIVITY
 #define HOME_SENSITIVITY 150                        // Define homing sensitivity if not in config.h.
 #endif
+
+#ifndef PHASE_SWITCHING
+#define PHASE_SWITCHING AUTO                        // Define automatic phase switching if not in config.h
+#endif
+
+#ifndef PHASE_SWITCH_ANGLE
+#define PHASE_SWITCH_ANGLE 45                       // Define phase switch at 45 degrees if not in config.h
+#endif
+
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
 int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
+int16_t phaseSwitchStartSteps;                      // Defines the step count at which phase should automatically invert.
+int16_t phaseSwitchStopSteps;                       // Defines the step count at which phase should automatically revert.
 const int16_t sanitySteps = SANITY_STEPS;           // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
 const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
@@ -129,10 +144,26 @@ void displayTTEXConfig() {
   if (fullTurnSteps == 0) {
     Serial.println(F("Turntable-EX has not been calibrated yet"));
   } else {
+#ifdef FULL_STEP_COUNT    
+    Serial.print(F("Manual override has been set for "));
+#else
     Serial.print(F("Turntable-EX has been calibrated for "));
+#endif
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
   }
+#if PHASE_SWITCHING == AUTO
+  Serial.print(F("Automatic phase switching enabled at "));
+  Serial.print(PHASE_SWITCH_ANGLE);
+  Serial.println(F(" degrees"));
+  Serial.print(F("Phase will switch at "));
+  Serial.print(phaseSwitchStartSteps);
+  Serial.print(F(" steps from home, and revert at "));
+  Serial.print(phaseSwitchStopSteps);
+  Serial.println(F(" steps from home"));
+#else
+  Serial.println(F("Manual phase switching enabled"));
+#endif
 }
 
 // Function to define the stepper parameters.
@@ -291,8 +322,12 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     int16_t moveSteps;
     Serial.print(F("Position steps: "));
     Serial.print(steps);
+#if PHASE_SWITCHING == AUTO
+    Serial.print(F(", Auto phase switch"));
+#else
     Serial.print(F(", Phase switch flag: "));
     Serial.print(phaseSwitch);
+#endif
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
     } else if ((steps - lastStep) < -halfTurnSteps) {
@@ -303,6 +338,13 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.print(F(" - moving "));
     Serial.print(moveSteps);
     Serial.println(F(" steps"));
+#if PHASE_SWITCHING == AUTO
+    if ((steps >= 0 && steps < phaseSwitchStartSteps) || (steps <= fullTurnSteps && steps >= phaseSwitchStopSteps)) {
+      phaseSwitch = 0;
+    } else {
+      phaseSwitch = 1;
+    }
+#endif
     Serial.print(F("Setting phase switch flag to: "));
     Serial.println(phaseSwitch);
     setPhase(phaseSwitch);
@@ -319,7 +361,7 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   }
 }
 
-// If phase switching is enabled, function to set it.
+// Function to set phase.
 void setPhase(uint8_t phase) {
 #if RELAY_ACTIVE_STATE == HIGH
   digitalWrite(relay1Pin, phase);
@@ -365,6 +407,9 @@ void calibration() {
 #endif
     fullTurnSteps = stepper.currentPosition();
     halfTurnSteps = fullTurnSteps / 2;
+#if PHASE_SWITCHING == AUTO
+    processAutoPhaseSwitch();
+#endif
     calibrating = false;
     calibrationPhase = 0;
     writeEEPROM(fullTurnSteps);
@@ -372,6 +417,7 @@ void calibration() {
     Serial.println(fullTurnSteps);
     homed = 0;
     lastTarget = sanitySteps;
+    displayTTEXConfig();
   } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
     stepper.stop();
@@ -395,6 +441,22 @@ void calibration() {
     calibrationPhase = 0;
   }
 }
+
+#if PHASE_SWITCHING == AUTO
+void processAutoPhaseSwitch() {
+  if (PHASE_SWITCH_ANGLE + 180 >= 360) {
+    Serial.print(F("ERROR: The defined phase switch angle of "));
+    Serial.print(PHASE_SWITCH_ANGLE);
+    Serial.println(F(" degrees is invalid, setting to default 45 degrees"));
+  }
+#if PHASE_SWITCH_ANGLE + 180 >= 360
+#undef PHASE_SWITCH_ANGLE
+#define PHASE_SWITCH_ANGLE 45
+#endif
+  phaseSwitchStartSteps = fullTurnSteps / 360 * PHASE_SWITCH_ANGLE;
+  phaseSwitchStopSteps = fullTurnSteps / 360 * (PHASE_SWITCH_ANGLE + 180);
+}
+#endif
 
 void setup() {
 // Basic setup, display what this is.
@@ -424,9 +486,19 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(accPin, OUTPUT);
 
-// Read steps from EEPROM
+// If step count explicitly defined, use that
+#ifdef FULL_STEP_COUNT
+  fullTurnSteps = FULL_STEP_COUNT;
+#else
+// Else read steps from EEPROM
   fullTurnSteps = getSteps();
+#endif
   halfTurnSteps = fullTurnSteps / 2;
+
+#if PHASE_SWITCHING == AUTO
+// Calculate phase invert/revert steps
+  processAutoPhaseSwitch();
+#endif
 
 // Display the configured stepper details
   displayTTEXConfig();

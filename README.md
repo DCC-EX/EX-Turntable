@@ -1,10 +1,12 @@
 # Turntable-EX
 
-**Note: This is a Beta relase of Turntable-EX, when performing Beta testing, please follow the process on the Turntable-EX overview page.**
+**Note: This is a Beta relase of Turntable-EX. When performing Beta testing, please follow the process on the [Turntable-EX overview page](https://dcc-ex.com/turntable-ex/turntable-ex.html).**
 
-*For the full documentation relating to Turntable-EX, please refer to the [DCC++ EX Website](https://dcc-ex.com/)*
+**This README is a very brief summary aimed at DCC++ EX team members helping with development and testing. For the full documentation relating to Turntable-EX, please refer to the [DCC++ EX Website](https://dcc-ex.com/).**
 
 **AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page. Modification comments are included within the library.
+
+**NmraDcc.h credit:** Also, while not directly used in this software, Alex Shephard's "DCCInterface_TurntableControl" was the inspiration for the initial turntable logic for another DCC driven turntable that translated into the beginnings of Turntable-EX. You can see this code as part of the [NmraDcc Arduino library](https://github.com/mrrwa/NmraDcc).
 
 Turntable-EX is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
 
@@ -98,6 +100,10 @@ Adjust these lines in "config.h" to suit:
 #define HOME_SENSOR_ACTIVE_STATE LOW
 #define RELAY_ACTIVE_STATE HIGH
 ```
+
+# Automatic phase switching
+
+As of version 0.3.1-Beta, Turntable-EX supports automatic phase switching as the default behaviour, based on a defined number of degrees from home (default, 45 degrees). This simplifies phase switching for Conductor level users, and will automatically revert the phase 180 degrees later. Manual phase switching via the Turntable-EX control commands is still supported and will not be deprecated. Refer to the documentation for the full explanation of how phase switching is implemented in Turntable-EX, and how to use and configure it.
 
 # Turntable-EX control commands
 
@@ -203,8 +209,6 @@ Note that if homing fails and calibration has not completed successfully to stor
 
 # To do/future
 
-There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
+There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented.
 
-- Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
-- Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
-- Add support for traversers and turntables that do not rotate 360 degrees ([Issue #41](https://github.com/DCC-EX/Turntable-EX/issues/41))
+To see all feature requests/enhancements and outstanding bugs that need fixing, refer to the Turntable-EX view of the [DCC++ EX GitHub Project](https://github.com/orgs/DCC-EX/projects/7/views/1).
