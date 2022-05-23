@@ -478,8 +478,13 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(accPin, OUTPUT);
 
-// Read steps from EEPROM
+// If step count explicitly defined, use that
+#ifdef FULL_STEP_COUNT
+  fullTurnSteps = FULL_STEP_COUNT
+#else
+// Else read steps from EEPROM
   fullTurnSteps = getSteps();
+#endif
   halfTurnSteps = fullTurnSteps / 2;
 
 #if PHASE_SWITCHING == AUTO
