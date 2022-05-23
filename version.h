@@ -6,6 +6,7 @@
 // 0.3.1-Beta:
 //  - Introduce automatic phase switching as the default behaviour.
 //  - Default phase switching happens at 45 degrees from home, and reverts 180 degrees later, this is configurable via config.h.
+//  - Added option to manually define the steps per rotation via config.h.
 // 0.3.0-Beta:
 //  - No actual changes, resetting version number for intial Beta release.
 // 0.2.3 includes:

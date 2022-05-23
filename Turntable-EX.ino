@@ -144,7 +144,11 @@ void displayTTEXConfig() {
   if (fullTurnSteps == 0) {
     Serial.println(F("Turntable-EX has not been calibrated yet"));
   } else {
+#ifdef FULL_STEP_COUNT    
+    Serial.print(F("Manual override has been set for "));
+#else
     Serial.print(F("Turntable-EX has been calibrated for "));
+#endif
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
   }
@@ -480,7 +484,7 @@ void setup() {
 
 // If step count explicitly defined, use that
 #ifdef FULL_STEP_COUNT
-  fullTurnSteps = FULL_STEP_COUNT
+  fullTurnSteps = FULL_STEP_COUNT;
 #else
 // Else read steps from EEPROM
   fullTurnSteps = getSteps();
