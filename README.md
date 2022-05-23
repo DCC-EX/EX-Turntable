@@ -209,8 +209,6 @@ Note that if homing fails and calibration has not completed successfully to stor
 
 # To do/future
 
-There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented:
+There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented.
 
-- Add installer tests ([Issue #24](https://github.com/DCC-EX/Turntable-EX/issues/24))
-- Potentially add a GC9A01 SPI round display ([Issue #15](https://github.com/DCC-EX/Turntable-EX/issues/15))
-- Add support for traversers and turntables that do not rotate 360 degrees ([Issue #41](https://github.com/DCC-EX/Turntable-EX/issues/41))
+To see all feature requests/enhancements and outstanding bugs that need fixing, refer to the Turntable-EX view of the [DCC++ EX GitHub Project](https://github.com/orgs/DCC-EX/projects/7/views/1).
