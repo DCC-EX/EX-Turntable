@@ -33,7 +33,7 @@ Any observations or comments:
 
 Any observations or comments:
 
-### Test 3 - Basic Movement and Phase Inversion
+### Test 3 - Basic Movement with Automatic Phase Switching
 #### Test 3, Part 1 - Clockwise
 
 `Not Tested/Pass/Fail`
@@ -65,6 +65,12 @@ Any observations or comments:
 Any observations or comments:
 
 ### Test 7 - Accessory Output Testing
+
+`Not Tested/Pass/Fail`
+
+Any observations or comments:
+
+### Test 8 - Manual Phase Switching
 
 `Not Tested/Pass/Fail`
 
