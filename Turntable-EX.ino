@@ -31,6 +31,10 @@
 #define AUTO 1
 #define MANUAL 0
 
+// Ensure TURNTABLE and TRAVERSER modes also have a value to test.
+#define TURNTABLE 0
+#define TRAVERSER 1
+
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
@@ -66,6 +70,7 @@ const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number
 int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
 int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
 uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
+const uint8_t limitSensorPin = 2;                   // Define pin 2 for the traverser mode limit sensor.
 const uint8_t homeSensorPin = 5;                    // Define pin 5 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
@@ -503,6 +508,10 @@ void setup() {
 // Display the configured stepper details
   displayTTEXConfig();
 
+#ifdef SENSOR_TESTING
+// If in sensor testing mode, display this, don't enable stepper or I2C
+  Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
+#else
 // Set up the stepper driver
   setupStepperDriver();
 
@@ -515,9 +524,14 @@ void setup() {
   } else {
     Serial.println(F("Homing..."));
   }
+#endif
 }
 
 void loop() {
+#ifdef SENSOR_TESTING
+// If we're only testing sensors, don't do anything else.
+  
+#else
 // If we haven't successfully homed yet, do it.
   if (homed == 0) {
     moveHome();
@@ -542,5 +556,6 @@ void loop() {
       stepper.disableOutputs();
     }
   }
+#endif
 #endif
 }

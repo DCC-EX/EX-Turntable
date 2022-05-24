@@ -10,11 +10,35 @@
 #define I2C_ADDRESS 0x60
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  Define the mode for Turntable-EX.
+//  TURNTABLE : Use this for normal, 360 degree rotation turntables (Default).
+//  TRAVERSER : Use this for vertical or horizontal traversers, or turntables that do
+//              do not rotate a full 360 degrees.
+// 
+#define TURNTABLE_EX_MODE TURNTABLE
+// #define TURNTABLE_EX_MODE TRAVERSER
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Enable sensor testing only, prevents all Turntable-EX operations.
+//  Uncomment this line to disable all normal Turntable-EX operations in order to test
+//  and validate that homing and limit sensors activate and deactivate correctly.
+// 
+// #define SENSOR_TESTING
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the active state for the homing sensor.
 //  LOW = When activated, the input is pulled down (ground or 0V).
 //  HIGH = When activated, the input is pulled up (typically 5V).
 // 
 #define HOME_SENSOR_ACTIVE_STATE LOW
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  REQUIRED FOR TRAVERSER MODE ONLY
+//  Define the active state for the limit sensor.
+//  LOW = When activated, the input is pulled down (ground or 0V).
+//  HIGH = When activated, the input is pulled up (typically 5V).
+// 
+#define LIMIT_SENSOR_ACTIVE_STATE LOW
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the active state for the phase switching relays.
