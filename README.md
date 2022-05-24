@@ -20,6 +20,7 @@ The integration includes:
 
 # What you need for Turntable-EX
 
+- A CommandStation running the "add-turntable-controller" branch (Displays as version 4.0.2)
 - An Arduino microcontroller (tested on Nano V3, both old and new bootloader, an Uno R3 should also work)
 - A supported stepper motor driver and stepper motor
 - A digital hall effect (or similar) sensor for homing (eg. A3144 or 44E)
@@ -30,7 +31,7 @@ The integration includes:
 
 This repository, Turntable-EX, contains the code required to run Turntable-EX on an Arduino microcontroller. The code is written and tested on a Nano, but should easily work on an Uno or (if you want overkill) a Mega.
 
-In order to control Turntable-EX from the CommandStation, you will also need the [add-turntable-controller](https://github.com/DCC-EX/CommandStation-EX/tree/add-turntable-controller) branch of the CommandStation-EX repository.
+In order to control Turntable-EX from the CommandStation, you will also need the [add-turntable-controller](https://github.com/DCC-EX/CommandStation-EX/tree/add-turntable-controller) branch of the CommandStation-EX repository. Note that this displays as version 4.0.2.
 
 # Getting up and running
 
