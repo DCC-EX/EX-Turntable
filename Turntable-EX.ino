@@ -84,6 +84,8 @@ uint8_t calibrationPhase = 0;                       // Flag for calibration phas
 unsigned long calMillis = 0;                        // Required for non blocking calibration pauses.
 char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
 uint8_t eepromVersion = 1;                          // Version of stored EEPROM data.
+bool homeSensorState = !HOME_SENSOR_ACTIVE_STATE;   // Stores the last home sensor state, initialise as inactive.
+bool limitSensorState = !LIMIT_SENSOR_ACTIVE_STATE; // Stores the last limit sensor state, initialise as inactive.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
@@ -480,6 +482,15 @@ void setup() {
   pinMode(homeSensorPin, INPUT);
 #endif
 
+#if TURNTABLE_EX_MODE == TRAVERSER
+// Configure limit sensor pin in traverser mode
+#if LIMIT_SENSOR_ACTIVE_STATE == LOW
+  pinMode(limitSensorPin, INPUT_PULLUP);
+#elif LIMIT_SENSOR_ACTIVE_STATE == HIGH
+  pinMode(limitSensorPin, INPUT);
+#endif
+#endif
+
 // Configure relay output pins
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
@@ -505,13 +516,13 @@ void setup() {
   processAutoPhaseSwitch();
 #endif
 
-// Display the configured stepper details
-  displayTTEXConfig();
-
 #ifdef SENSOR_TESTING
 // If in sensor testing mode, display this, don't enable stepper or I2C
   Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
 #else
+// Display the configured stepper details
+  displayTTEXConfig();
+
 // Set up the stepper driver
   setupStepperDriver();
 
@@ -530,7 +541,20 @@ void setup() {
 void loop() {
 #ifdef SENSOR_TESTING
 // If we're only testing sensors, don't do anything else.
-  
+  bool newHomeSensorState = digitalRead(homeSensorPin);
+  if (newHomeSensorState != homeSensorState) {
+    Serial.print(F("Home sensor pin state changed to "));
+    Serial.println(newHomeSensorState);
+    homeSensorState = newHomeSensorState;
+  }
+
+  bool newLimitSensorState = digitalRead(limitSensorPin);
+  if (newLimitSensorState != limitSensorState) {
+    Serial.print(F("Limit sensor pin state changed to "));
+    Serial.println(newLimitSensorState);
+    limitSensorState = newLimitSensorState;
+  }
+
 #else
 // If we haven't successfully homed yet, do it.
   if (homed == 0) {

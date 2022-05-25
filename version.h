@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.3.1-Beta"
+#define VERSION "0.4.0-Beta"
 
+// 0.4.0-Beta:
+//  - Introduced support for traversers and turntables that rotate less than 360 degrees.
 // 0.3.1-Beta:
 //  - Introduce automatic phase switching as the default behaviour.
 //  - Default phase switching happens at 45 degrees from home, and reverts 180 degrees later, this is configurable via config.h.
