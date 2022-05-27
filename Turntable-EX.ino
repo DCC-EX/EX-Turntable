@@ -197,7 +197,8 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  if (digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+  // if (digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
@@ -423,7 +424,12 @@ void processLED() {
 // - Write steps to EEPROM.
 void calibration() {
   setPhase(0);
-  if (calibrationPhase == 2 && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+  // if (calibrationPhase == 2 && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+#if TURNTABLE_EX_MODE == TRAVERSER
+    if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && stepper.currentPosition() < homeSensitivity) {
+#else
+    if (calibrationPhase == 2 && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+#endif
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
     stepper.disableOutputs();
@@ -441,14 +447,20 @@ void calibration() {
     homed = 0;
     lastTarget = sanitySteps;
     displayTTEXConfig();
-  } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+  // } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+    } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
     stepper.stop();
     stepper.setCurrentPosition(0);
     calibrationPhase = 2;
     stepper.enableOutputs();
+#if TURNTABLE_EX_MODE == TRAVERSER
+    stepper.moveTo(-sanitySteps);
+    lastStep = -sanitySteps;
+#else
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
+#endif
   } else if (calibrationPhase == 0 && !stepper.isRunning() && homed == 1) {
     Serial.println(F("CALIBRATION: Phase 1, homing..."));
     calibrationPhase = 1;
@@ -614,6 +626,25 @@ void loop() {
   }
 
 #else
+#if TURNTABLE_EX_MODE == TRAVERSER
+// If we hit our limit switch when not calibrating, stop!
+  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning()) {
+    Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
+    if (!homed) {
+      homed = 1;
+    }
+    stepper.stop();
+    stepper.setCurrentPosition(stepper.currentPosition());
+  }
+
+// If we hit our home switch when not homing, stop!
+  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning()) {
+    Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
+    stepper.stop();
+    stepper.setCurrentPosition(stepper.currentPosition());
+  }
+#endif
+
 // If we haven't successfully homed yet, do it.
   if (homed == 0) {
     moveHome();
