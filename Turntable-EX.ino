@@ -44,6 +44,10 @@
 #endif
 
 // Define global variables here.
+#ifndef TURNTABLE_EX_MODE
+#define TURNTABLE_EX_MODE TURNTABLE                 // If the mode isn't defined, put it in turntable mode.
+#endif
+
 #ifndef SANITY_STEPS
 #define SANITY_STEPS 10000                          // Define sanity steps if not in config.h.
 #endif
@@ -60,8 +64,12 @@
 #define PHASE_SWITCH_ANGLE 45                       // Define phase switch at 45 degrees if not in config.h
 #endif
 
-#ifndef DEBOUNCE_DELAY
-#define DEBOUNCE_DELAY 10                           // Define debounce delay in ms if not in config.h
+#ifndef DEBOUNCE_DELAY                              // Define debounce delay in ms if not in config.h
+#if TURNTABLE_EX_MODE == TRAVERSER
+#define DEBOUNCE_DELAY 10                           // If we're a traverser, use a delay because switches likely in use
+#elif TURNTABLE_EX_MODE == TURNTABLE
+#define DEBOUNCE_DELAY 0                            // If we're a turntable, use 0 because hall effect sensor likely in use
+#endif
 #endif
 
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
@@ -88,10 +96,12 @@ uint8_t calibrationPhase = 0;                       // Flag for calibration phas
 unsigned long calMillis = 0;                        // Required for non blocking calibration pauses.
 char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
 uint8_t eepromVersion = 1;                          // Version of stored EEPROM data.
-bool homeSensorState;                               // Stores the last home sensor state, initialise as inactive.
-bool limitSensorState;                              // Stores the last limit sensor state, initialise as inactive.
-unsigned long limitLastSwitch = 0;                  // Stores the last time the limit sensor switched for debouncing.
-unsigned long homeLastSwitch = 0;                   // Stores the last time the home sensor switched for debouncing.
+bool homeSensorState;                               // Stores the current home sensor state.
+bool limitSensorState;                              // Stores the current limit sensor state.
+bool lastHomeSensorState;                           // Stores the last home sensor state.
+bool lastLimitSensorState;                          // Stores the last limit sensor state.
+unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
+unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
@@ -455,6 +465,7 @@ void calibration() {
   }
 }
 
+// If phase switching is set to auto, calculate the trigger point steps based on the angle.
 #if PHASE_SWITCHING == AUTO
 void processAutoPhaseSwitch() {
   if (PHASE_SWITCH_ANGLE + 180 >= 360) {
@@ -471,12 +482,24 @@ void processAutoPhaseSwitch() {
 }
 #endif
 
+// Function to debounce and get the state of the homing sensor
 bool getHomeState() {
-  return digitalRead(homeSensorPin);
+  bool newHomeSensorState = digitalRead(homeSensorPin);
+  if (newHomeSensorState != lastHomeSensorState && (millis() - lastHomeDebounce) > DEBOUNCE_DELAY) {
+    lastHomeDebounce = millis();
+    lastHomeSensorState = newHomeSensorState;
+  }
+  return lastHomeSensorState;
 }
 
+// Function to debounce and get the state of the limit sensor
 bool getLimitState() {
-  return digitalRead(limitSensorPin);
+  bool newLimitSensorState = digitalRead(limitSensorPin);
+  if (newLimitSensorState != lastLimitSensorState && (millis() - lastLimitDebounce) > DEBOUNCE_DELAY) {
+    lastLimitDebounce = millis();
+    lastLimitSensorState = newLimitSensorState;
+  }
+  return lastLimitSensorState;
 }
 
 void setup() {
@@ -503,6 +526,14 @@ void setup() {
 #elif LIMIT_SENSOR_ACTIVE_STATE == HIGH
   pinMode(limitSensorPin, INPUT);
 #endif
+#endif
+
+// Get the current sensor state
+  lastHomeSensorState = digitalRead(homeSensorPin);
+  homeSensorState = getHomeState();
+#if TURNTABLE_EX_MODE == TRAVERSER
+  lastLimitSensorState = digitalRead(limitSensorPin);
+  limitSensorState = getLimitState();
 #endif
 
 // Configure relay output pins
@@ -533,12 +564,12 @@ void setup() {
 #ifdef SENSOR_TESTING
 // If in sensor testing mode, display this, don't enable stepper or I2C
   Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
-  homeSensorState = digitalRead(homeSensorPin);
-  limitSensorState = digitalRead(limitSensorPin);
   Serial.print(F("Home/limit switch current state: "));
   Serial.print(homeSensorState);
   Serial.print(F("/"));
   Serial.println(limitSensorState);
+  Serial.print(F("Debounce delay: "));
+  Serial.println(DEBOUNCE_DELAY);
 #else
 // Display the configured stepper details
   displayTTEXConfig();
@@ -561,24 +592,25 @@ void setup() {
 void loop() {
 #ifdef SENSOR_TESTING
 // If we're only testing sensors, don't do anything else.
-  bool newHomeSensorState = getHomeState();
-  if (newHomeSensorState != homeSensorState) {
-    if (newHomeSensorState == HOME_SENSOR_ACTIVE_STATE) {
+  bool testHomeSensorState = getHomeState();
+  if (testHomeSensorState != homeSensorState) {
+    if (testHomeSensorState == HOME_SENSOR_ACTIVE_STATE) {
       Serial.println(F("Home sensor ACTIVATED"));
     } else {
       Serial.println(F("Home sensor DEACTIVATED"));
     }
-    homeSensorState = newHomeSensorState;
+    homeSensorState = testHomeSensorState;
   }
+  getHomeState();
 
-  bool newLimitSensorState = getLimitState();
-  if (newLimitSensorState != limitSensorState) {
-    if (newLimitSensorState == LIMIT_SENSOR_ACTIVE_STATE) {
+  bool testLimitSensorState = getLimitState();
+  if (testLimitSensorState != limitSensorState) {
+    if (testLimitSensorState == LIMIT_SENSOR_ACTIVE_STATE) {
       Serial.println(F("Limit sensor ACTIVATED"));
     } else {
       Serial.println(F("Limit sensor DEACTIVATED"));
     }
-    limitSensorState = newLimitSensorState;
+    limitSensorState = testLimitSensorState;
   }
 
 #else

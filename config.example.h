@@ -137,3 +137,9 @@
 //  Override the step count determined by automatic calibration by uncommenting the line
 //  below, and manually defining a specific step count.
 // #define FULL_STEP_COUNT 4096
+// 
+//  Override the default debounce delay (in ms) if using mechanical home/limit switches that have
+//  "noisy" switch bounce issues.
+//  In TRAVERSER mode, default is 10ms as these would typically use mechanical switches.
+//  In TURNTABLE mode, default is 0ms as these would typically use hall effect sensors.
+// #define DEBOUNCE_DELAY 10
