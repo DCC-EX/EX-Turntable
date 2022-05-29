@@ -352,6 +352,14 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.print(F(", Phase switch flag: "));
     Serial.print(phaseSwitch);
 #endif
+#if TURNTABLE_EX_MODE == TRAVERSER
+// If we're in traverser mode, full turn steps are -, move + is towards home, move - towards limit.
+    if (steps > lastStep) {
+      moveSteps = steps - lastStep;
+    } else {
+      moveSteps = lastStep - steps;
+    }
+#else
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
     } else if ((steps - lastStep) < -halfTurnSteps) {
@@ -359,6 +367,7 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     } else {
       moveSteps = steps - lastStep;
     }
+#endif
     Serial.print(F(" - moving "));
     Serial.print(moveSteps);
     Serial.println(F(" steps"));
@@ -435,6 +444,9 @@ void calibration() {
     stepper.disableOutputs();
 #endif
     fullTurnSteps = stepper.currentPosition();
+    if (fullTurnSteps < 0) {
+      fullTurnSteps = -fullTurnSteps;
+    }
     halfTurnSteps = fullTurnSteps / 2;
 #if PHASE_SWITCHING == AUTO
     processAutoPhaseSwitch();
