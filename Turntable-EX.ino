@@ -436,7 +436,7 @@ void processLED() {
 void calibration() {
   setPhase(0);
 #if TURNTABLE_EX_MODE == TRAVERSER
-  if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE) {
+  if (calibrationPhase == 3 && getLimitState() != LIMIT_SENSOR_ACTIVE_STATE) {
 #else
   if (calibrationPhase == 2 && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
 #endif
@@ -461,6 +461,15 @@ void calibration() {
     homed = 0;
     lastTarget = sanitySteps;
     displayTTEXConfig();
+#if TURNTABLE_EX_MODE == TRAVERSER
+  } else if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE) {
+    // In TRAVERSER mode, we want our full step count to stop short of the limit switch, so need phase 3 to move away.
+    Serial.println(F("CALIBRATION: Phase 3, "));
+    stepper.enableOutputs();
+    stepper.moveTo(0);
+    lastStep = 0;
+    calibrationPhase = 3;
+#endif
 #if TURNTABLE_EX_MODE == TRAVERSER
   } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
 #else
