@@ -464,7 +464,7 @@ void calibration() {
 #if TURNTABLE_EX_MODE == TRAVERSER
   } else if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE) {
     // In TRAVERSER mode, we want our full step count to stop short of the limit switch, so need phase 3 to move away.
-    Serial.println(F("CALIBRATION: Phase 3, "));
+    Serial.println(F("CALIBRATION: Phase 3, counting limit steps..."));
     stepper.enableOutputs();
     stepper.moveTo(0);
     lastStep = 0;
@@ -472,10 +472,11 @@ void calibration() {
 #endif
 #if TURNTABLE_EX_MODE == TRAVERSER
   } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
+    Serial.println(F("CALIBRATION: Phase 2, finding limit switch..."));
 #else
   } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
-#endif
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
+#endif
     stepper.stop();
     stepper.setCurrentPosition(0);
     calibrationPhase = 2;
