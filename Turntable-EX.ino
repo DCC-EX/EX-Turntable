@@ -673,19 +673,9 @@ void loop() {
 
 #else
 
-// If we haven't successfully homed yet, do it.
-  if (homed == 0) {
-    moveHome();
-  }
-
-// If flag is set for calibrating, do it.
-  if (calibrating) {
-    calibration();
-  }
-
 #if TURNTABLE_EX_MODE == TRAVERSER
 // If we hit our limit switch when not calibrating, stop!
-  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < -fullTurnSteps) {
+  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning()) {
     Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
     if (!homed) {
       homed = 1;
@@ -695,12 +685,22 @@ void loop() {
   }
 
 // If we hit our home switch when not homing, stop!
-  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning() && stepper.targetPosition() > 0) {
+  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning()) {
     Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
     stepper.stop();
     stepper.setCurrentPosition(stepper.currentPosition());
   }
 #endif
+
+// If we haven't successfully homed yet, do it.
+  if (homed == 0) {
+    moveHome();
+  }
+
+// If flag is set for calibrating, do it.
+  if (calibrating) {
+    calibration();
+  }
 
 // Process the stepper object continuously.
   stepper.run();
