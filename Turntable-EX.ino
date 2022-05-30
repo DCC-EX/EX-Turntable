@@ -167,7 +167,7 @@ void displayTTEXConfig() {
 #if TURNTABLE_EX_MODE == TRAVERSER
   Serial.println(F("Turntable-EX in TRAVERSER mode"));
 #else
-  Serial.println(F("Turntable-EX in TURNTABLE mode"))
+  Serial.println(F("Turntable-EX in TURNTABLE mode"));
 #endif  
   if (fullTurnSteps == 0) {
     Serial.println(F("Turntable-EX has not been calibrated yet"));
