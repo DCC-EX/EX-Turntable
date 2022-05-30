@@ -164,6 +164,11 @@ void clearEEPROM() {
 
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
+#if TURNTABLE_EX_MODE == TRAVERSER
+  Serial.println(F("Turntable-EX in TRAVERSER mode"));
+#else
+  Serial.println(F("Turntable-EX in TURNTABLE mode"))
+#endif  
   if (fullTurnSteps == 0) {
     Serial.println(F("Turntable-EX has not been calibrated yet"));
   } else {
@@ -353,12 +358,8 @@ void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
     Serial.print(phaseSwitch);
 #endif
 #if TURNTABLE_EX_MODE == TRAVERSER
-// If we're in traverser mode, full turn steps are -, move + is towards home, move - towards limit.
-    if (steps > lastStep) {
-      moveSteps = steps - lastStep;
-    } else {
-      moveSteps = lastStep - steps;
-    }
+// If we're in traverser mode, very simple logic, negative move to limit, positive move to home.
+    moveSteps = lastStep - steps;
 #else
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
@@ -526,6 +527,17 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
+// Function to send test commands to self without needing CS online.
+void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
+  uint8_t stepsMSB = testSteps >> 8;
+  uint8_t stepsLSB = testSteps & 0xFF;
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(stepsMSB);
+  Wire.write(stepsLSB);
+  Wire.write(testActivity);
+  Wire.endTransmission();
+}
+
 void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
@@ -640,7 +652,7 @@ void loop() {
 #else
 #if TURNTABLE_EX_MODE == TRAVERSER
 // If we hit our limit switch when not calibrating, stop!
-  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning()) {
+  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < -fullTurnSteps) {
     Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
     if (!homed) {
       homed = 1;
@@ -650,7 +662,7 @@ void loop() {
   }
 
 // If we hit our home switch when not homing, stop!
-  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning()) {
+  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning() && stepper.targetPosition() > 0) {
     Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
     stepper.stop();
     stepper.setCurrentPosition(stepper.currentPosition());
