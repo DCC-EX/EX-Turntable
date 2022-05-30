@@ -424,7 +424,8 @@ void processLED() {
   digitalWrite(ledPin, ledOutput);
 }
 
-// The calibration function is used to determine the number of steps required for a single 360 degree rotation.
+// The calibration function is used to determine the number of steps required for a single 360 degree rotation,
+// or, in traverser mode, the steps between the home and limit switches.
 // This should only be trigged when either there are no stored steps in EEPROM, the stored steps are invalid,
 // or the calibration command has been initiated by the CommandStation.
 // Logic:
@@ -434,11 +435,10 @@ void processLED() {
 // - Write steps to EEPROM.
 void calibration() {
   setPhase(0);
-  // if (calibrationPhase == 2 && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
 #if TURNTABLE_EX_MODE == TRAVERSER
-    if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && stepper.currentPosition() < homeSensitivity) {
+  if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE) {
 #else
-    if (calibrationPhase == 2 && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+  if (calibrationPhase == 2 && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
 #endif
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
@@ -457,11 +457,15 @@ void calibration() {
     writeEEPROM(fullTurnSteps);
     Serial.print(F("CALIBRATION: Completed, storing full turn step count: "));
     Serial.println(fullTurnSteps);
+    stepper.setCurrentPosition(stepper.currentPosition());
     homed = 0;
     lastTarget = sanitySteps;
     displayTTEXConfig();
-  // } else if (calibrationPhase == 1 && lastStep == sanitySteps && digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
-    } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+#if TURNTABLE_EX_MODE == TRAVERSER
+  } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
+#else
+  } else if (calibrationPhase == 1 && lastStep == sanitySteps && getHomeState() == HOME_SENSOR_ACTIVE_STATE && stepper.currentPosition() > homeSensitivity) {
+#endif
     Serial.println(F("CALIBRATION: Phase 2, counting full turn steps..."));
     stepper.stop();
     stepper.setCurrentPosition(0);
@@ -469,7 +473,7 @@ void calibration() {
     stepper.enableOutputs();
 #if TURNTABLE_EX_MODE == TRAVERSER
     stepper.moveTo(-sanitySteps);
-    lastStep = -sanitySteps;
+    lastStep = sanitySteps;
 #else
     stepper.moveTo(sanitySteps);
     lastStep = sanitySteps;
@@ -477,8 +481,17 @@ void calibration() {
   } else if (calibrationPhase == 0 && !stepper.isRunning() && homed == 1) {
     Serial.println(F("CALIBRATION: Phase 1, homing..."));
     calibrationPhase = 1;
+#if TURNTABLE_EX_MODE == TRAVERSER
+    if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
+      Serial.println(F("Turntable already homed"));
+    } else {
+      stepper.enableOutputs();
+      stepper.moveTo(sanitySteps);
+    }
+#else
     stepper.enableOutputs();
     stepper.moveTo(sanitySteps);
+#endif
     lastStep = sanitySteps;
   } else if ((calibrationPhase == 2 || calibrationPhase == 1) && !stepper.isRunning() && stepper.currentPosition() == sanitySteps) {
     Serial.println(F("CALIBRATION: FAILED, could not home, could not determine step count"));
@@ -650,6 +663,17 @@ void loop() {
   }
 
 #else
+
+// If we haven't successfully homed yet, do it.
+  if (homed == 0) {
+    moveHome();
+  }
+
+// If flag is set for calibrating, do it.
+  if (calibrating) {
+    calibration();
+  }
+
 #if TURNTABLE_EX_MODE == TRAVERSER
 // If we hit our limit switch when not calibrating, stop!
   if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < -fullTurnSteps) {
@@ -668,16 +692,6 @@ void loop() {
     stepper.setCurrentPosition(stepper.currentPosition());
   }
 #endif
-
-// If we haven't successfully homed yet, do it.
-  if (homed == 0) {
-    moveHome();
-  }
-
-// If flag is set for calibrating, do it.
-  if (calibrating) {
-    calibration();
-  }
 
 // Process the stepper object continuously.
   stepper.run();
