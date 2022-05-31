@@ -13,7 +13,11 @@ jobs:
       run: pip install wheel
     - name: Install PlatformIO Core
       run: pip install -U platformio
-    - name: Copy generic config over
+    - name: Copy generic turntable config over
       run: cp config.example.h config.h
-    - name: Compile Command Station (AVR)
+    - name: Compile Turntable-EX (turntable mode)
+      run: python -m platformio run
+    - name: Copy generic traverser config over
+      run: cp config.traverser.h config.h
+    - name: Compile Turntable-EX (traverser mode)
       run: python -m platformio run
