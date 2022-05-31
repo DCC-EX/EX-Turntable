@@ -164,11 +164,6 @@ void clearEEPROM() {
 
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
-#if TURNTABLE_EX_MODE == TRAVERSER
-  Serial.println(F("Turntable-EX in TRAVERSER mode"));
-#else
-  Serial.println(F("Turntable-EX in TURNTABLE mode"));
-#endif  
   if (fullTurnSteps == 0) {
     Serial.println(F("Turntable-EX has not been calibrated yet"));
   } else {
@@ -464,8 +459,9 @@ void calibration() {
 #if TURNTABLE_EX_MODE == TRAVERSER
   } else if (calibrationPhase == 2 && getLimitState() == LIMIT_SENSOR_ACTIVE_STATE) {
     // In TRAVERSER mode, we want our full step count to stop short of the limit switch, so need phase 3 to move away.
+    stepper.stop();
+    stepper.setCurrentPosition(stepper.currentPosition());
     Serial.println(F("CALIBRATION: Phase 3, counting limit steps..."));
-    stepper.enableOutputs();
     stepper.moveTo(0);
     lastStep = 0;
     calibrationPhase = 3;
@@ -550,16 +546,17 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
-// Function to send test commands to self without needing CS online.
-void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
-  uint8_t stepsMSB = testSteps >> 8;
-  uint8_t stepsLSB = testSteps & 0xFF;
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(stepsMSB);
-  Wire.write(stepsLSB);
-  Wire.write(testActivity);
-  Wire.endTransmission();
-}
+// Not in use yet, to be added in a future release using serial command input.
+// // Function to send test commands to self without needing CS online.
+// void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
+//   uint8_t stepsMSB = testSteps >> 8;
+//   uint8_t stepsLSB = testSteps & 0xFF;
+//   Wire.beginTransmission(I2C_ADDRESS);
+//   Wire.write(stepsMSB);
+//   Wire.write(stepsLSB);
+//   Wire.write(testActivity);
+//   Wire.endTransmission();
+// }
 
 void setup() {
 // Basic setup, display what this is.
@@ -620,6 +617,12 @@ void setup() {
   processAutoPhaseSwitch();
 #endif
 
+#if TURNTABLE_EX_MODE == TRAVERSER
+  Serial.println(F("Turntable-EX in TRAVERSER mode"));
+#else
+  Serial.println(F("Turntable-EX in TURNTABLE mode"));
+#endif
+
 #ifdef SENSOR_TESTING
 // If in sensor testing mode, display this, don't enable stepper or I2C
   Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
@@ -662,6 +665,7 @@ void loop() {
   }
   getHomeState();
 
+#if TURNTABLE_EX_MODE == TRAVERSER
   bool testLimitSensorState = getLimitState();
   if (testLimitSensorState != limitSensorState) {
     if (testLimitSensorState == LIMIT_SENSOR_ACTIVE_STATE) {
@@ -671,12 +675,13 @@ void loop() {
     }
     limitSensorState = testLimitSensorState;
   }
+#endif
 
 #else
 
 #if TURNTABLE_EX_MODE == TRAVERSER
 // If we hit our limit switch when not calibrating, stop!
-  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning()) {
+  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < 0) {
     Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
     if (!homed) {
       homed = 1;
@@ -686,10 +691,10 @@ void loop() {
   }
 
 // If we hit our home switch when not homing, stop!
-  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning()) {
+  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning() && stepper.distanceToGo() > 0) {
     Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
     stepper.stop();
-    stepper.setCurrentPosition(stepper.currentPosition());
+    stepper.setCurrentPosition(0);
   }
 #endif
 

@@ -18,6 +18,22 @@ The integration includes:
 - Out-of-the-box support for several common stepper motor drivers
 - DCC signal phase switching to align bridge track phase with layout phase
 
+## Traverser mode
+
+As of version 0.4.0-Beta, a new feature was added to support horizontal and vertical traversers as well as restricted rotation turntables that do not rotate a full 360 degrees.
+
+Refer to the [DCC++ EX Website](https://dcc-ex.com/) website for the full documentation on enabling and using the traverser feature as this is not outlined in any detail in this README.
+
+The primary difference is the addition of a limit sensor/switch in addition to the homing sensor, and a modification to the calibration sequence to calculate the steps based on the distance between the home and limit sensors.
+
+All other features (phase switching, LED, accessory output) and control commands remain the same.
+
+## Sensor testing
+
+Also as of version 0.4.0-Beta, an option has been introduced to allow testing of both home and limit sensors while disabling all other Turntable-EX operations.
+
+This is critical to ensuring sensors operate correctly in traverser mode to ensure no physical damage results from the stepper trying to drive a traverser or restricted rotation turntable beyond physical limitations.
+
 # What you need for Turntable-EX
 
 - A CommandStation running the "add-turntable-controller" branch (Displays as version 4.0.2)
@@ -207,6 +223,12 @@ The calibration sequence will first initiate a rotation to home the turntable (i
 At any time, calibration can be performed again using the "Calibrate" (diagnostic activity 3) command, which will erase the EEPROM contents and initiate the sequence.
 
 Note that if homing fails and calibration has not completed successfully to store the step counts, calibration will not commence until such time as a successful homing activity has been performed. In this instance, once homing issues are resolved, initiate either a "Home" (2) or "Calibrate" (3) command.
+
+## Traverser mode calibration
+
+When traverser mode is enabled, the calibration sequence has a slight modification in behaviour to make use of both the homing and limit sensors, and the step count is calculated on the distance from the home sensor to just prior to activating the limit sensor.
+
+This results in a three step calibration process, whereby the traverser homes first, then moves until it activates the limit switch, and finally moves away to the point where the limit switch is deactivated, and this is recorded as the steps per revolution.
 
 # To do/future
 

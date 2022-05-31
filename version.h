@@ -5,6 +5,7 @@
 
 // 0.4.0-Beta:
 //  - Introduced support for traversers and turntables that rotate less than 360 degrees.
+//  - Added sensor testing mode that disables all operations and only reports sensor changes to the serial console.
 // 0.3.1-Beta:
 //  - Introduce automatic phase switching as the default behaviour.
 //  - Default phase switching happens at 45 degrees from home, and reverts 180 degrees later, this is configurable via config.h.
