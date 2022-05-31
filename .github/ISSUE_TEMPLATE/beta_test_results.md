@@ -76,6 +76,18 @@ Any observations or comments:
 
 Any observations or comments:
 
+### Test 9 - Sensor Testing
+
+`Not Tested/Pass/Fail`
+
+Any observations or comments:
+
+### Test 10 - Traverser Mode
+
+`Not Tested/Pass/Fail`
+
+Any observations or comments:
+
 ### General comments or feedback
 
 Please share any general comments or feedback here:
