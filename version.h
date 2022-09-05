@@ -1,8 +1,11 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.4.0-Beta"
+#define VERSION "0.5.0-Beta"
 
+// 0.5.0-Beta:
+//  - Rename to EX-Turntable in line with re-branding of DCC-EX.
+//  - Add test commands via serial console to replicate diagnostic <D TT vpin steps activity> command for local testing.
 // 0.4.0-Beta:
 //  - Introduced support for traversers and turntables that rotate less than 360 degrees.
 //  - Added sensor testing mode that disables all operations and only reports sensor changes to the serial console.

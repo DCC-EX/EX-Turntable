@@ -1,14 +1,14 @@
-# Turntable-EX
+# EX-Turntable
 
-**Note: This is a Beta relase of Turntable-EX. When performing Beta testing, please follow the process on the [Turntable-EX overview page](https://dcc-ex.com/turntable-ex/turntable-ex.html).**
+**Note: This is a Beta relase of EX-Turntable. When performing Beta testing, please follow the process on the [EX-Turntable overview page](https://dcc-ex.com/ex-turntable/index.html).**
 
-**This README is a very brief summary aimed at DCC++ EX team members helping with development and testing. For the full documentation relating to Turntable-EX, please refer to the [DCC++ EX Website](https://dcc-ex.com/).**
+**This README is a very brief summary aimed at DCC++ EX team members helping with development and testing. For the full documentation relating to EX-Turntable, please refer to the [DCC++ EX Website](https://dcc-ex.com/).**
 
-**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the Turntable-EX software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page. Modification comments are included within the library.
+**AccelStepper.h credit:** This project would not be effective without the excellent work by Mike McCauley on the AccelStepper.h library that enables us to have somewhat prototypical acceleration and deceleration of the turntable. A slightly modified version of this library is included with the EX-Turntable software (sans example sketches), and more details can be found on the official [AccelStepper](http://www.airspayce.com/mikem/arduino/AccelStepper/) web page. Modification comments are included within the library.
 
-**NmraDcc.h credit:** Also, while not directly used in this software, Alex Shephard's "DCCInterface_TurntableControl" was the inspiration for the initial turntable logic for another DCC driven turntable that translated into the beginnings of Turntable-EX. You can see this code as part of the [NmraDcc Arduino library](https://github.com/mrrwa/NmraDcc).
+**NmraDcc.h credit:** Also, while not directly used in this software, Alex Shephard's "DCCInterface_TurntableControl" was the inspiration for the initial turntable logic for another DCC driven turntable that translated into the beginnings of EX-Turntable. You can see this code as part of the [NmraDcc Arduino library](https://github.com/mrrwa/NmraDcc).
 
-Turntable-EX is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
+EX-Turntable is a fully integrated turntable controller for DCC++ EX, using an Arduino microcontroller to drive a stepper controller and motor to spin the turntable bridge.
 
 The integration includes:
 
@@ -30,11 +30,11 @@ All other features (phase switching, LED, accessory output) and control commands
 
 ## Sensor testing
 
-Also as of version 0.4.0-Beta, an option has been introduced to allow testing of both home and limit sensors while disabling all other Turntable-EX operations.
+Also as of version 0.4.0-Beta, an option has been introduced to allow testing of both home and limit sensors while disabling all other EX-Turntable operations.
 
 This is critical to ensuring sensors operate correctly in traverser mode to ensure no physical damage results from the stepper trying to drive a traverser or restricted rotation turntable beyond physical limitations.
 
-# What you need for Turntable-EX
+# What you need for EX-Turntable
 
 - A CommandStation running the "add-turntable-controller" branch (Displays as version 4.0.2)
 - An Arduino microcontroller (tested on Nano V3, both old and new bootloader, an Uno R3 should also work)
@@ -45,13 +45,13 @@ This is critical to ensuring sensors operate correctly in traverser mode to ensu
 
 # What's in (and not in) this repository?
 
-This repository, Turntable-EX, contains the code required to run Turntable-EX on an Arduino microcontroller. The code is written and tested on a Nano, but should easily work on an Uno or (if you want overkill) a Mega.
+This repository, EX-Turntable, contains the code required to run EX-Turntable on an Arduino microcontroller. The code is written and tested on a Nano, but should easily work on an Uno or (if you want overkill) a Mega.
 
-In order to control Turntable-EX from the CommandStation, you will also need the [add-turntable-controller](https://github.com/DCC-EX/CommandStation-EX/tree/add-turntable-controller) branch of the CommandStation-EX repository. Note that this displays as version 4.0.2.
+In order to control EX-Turntable from the CommandStation, you will also need the [add-turntable-controller](https://github.com/DCC-EX/CommandStation-EX/tree/add-turntable-controller) branch of the CommandStation-EX repository. Note that this displays as version 4.0.2.
 
 # Getting up and running
 
-By default, Turntable-EX will be available on I2C address 0x60, and this is configurable.
+By default, EX-Turntable will be available on I2C address 0x60, and this is configurable.
 
 You will need to include the IO_TurntableEX.h device driver and create the device in myHal.cpp (absolute bare minimum example below):
 
@@ -70,7 +70,7 @@ void halSetup() {
 
 Like other DCC++ EX code, config.example.h is provided and will be utilised automatically if a specific config.h is not defined.
 
-If nothing is changed in Turntable-EX, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and an active-high dual relay board for phase/polarity switching of the track on the turntable bridge.
+If nothing is changed in EX-Turntable, it will support a ULN2003 stepper motor controller with a 28BYJ-48 stepper motor, an active-low hall effect sensor for homing, and an active-high dual relay board for phase/polarity switching of the track on the turntable bridge.
 
 Other common stepper drivers and motors are supported, and if an alternative driver or stepper is listed as "pin compatible" with one of these, it will likely also work with the caveat that if it hasn't been tested, that cannot be confirmed. The list of currently tested and supported stepper drivers and motors is:
 
@@ -120,9 +120,9 @@ Adjust these lines in "config.h" to suit:
 
 # Automatic phase switching
 
-As of version 0.3.1-Beta, Turntable-EX supports automatic phase switching as the default behaviour, based on a defined number of degrees from home (default, 45 degrees). This simplifies phase switching for Conductor level users, and will automatically revert the phase 180 degrees later. Manual phase switching via the Turntable-EX control commands is still supported and will not be deprecated. Refer to the documentation for the full explanation of how phase switching is implemented in Turntable-EX, and how to use and configure it.
+As of version 0.3.1-Beta, EX-Turntable supports automatic phase switching as the default behaviour, based on a defined number of degrees from home (default, 45 degrees). This simplifies phase switching for Conductor level users, and will automatically revert the phase 180 degrees later. Manual phase switching via the EX-Turntable control commands is still supported and will not be deprecated. Refer to the documentation for the full explanation of how phase switching is implemented in EX-Turntable, and how to use and configure it.
 
-# Turntable-EX control commands
+# EX-Turntable control commands
 
 The turntable is controlled by sending the desired position defined as the number of steps from home, and an activity flag.
 
@@ -164,10 +164,10 @@ MOVETT(600, 100, Turn_PInvert)
 
 The recommended way to implement the turntable positions is to define a custom TURNTABLE_EX() macro that includes both the MOVETT() command with RESERVE()/FREE() and WAITFOR() commands to ensure nothing is able to interfere with the turntable until after movements have completed.
 
-There will be a sample myTurntable-EX.h_example.txt file for users to copy and customise to suit their layout.
+There will be a sample myEX-Turntable.h_example.txt file for users to copy and customise to suit their layout.
 
 ```
-// For Conductor level users who wish to just use Turntable-EX, you don't need to understand this
+// For Conductor level users who wish to just use EX-Turntable, you don't need to understand this
 // and can move to defining the turntable positions below. You must, however, ensure this remains
 // before any position definitions or you will get compile errors when uploading.
 //
@@ -188,7 +188,7 @@ There will be a sample myTurntable-EX.h_example.txt file for users to copy and c
 //
 // route_id = A unique number for each defined route, the route is what appears in throttles
 // reserve_id = A unique reservation number (0 - 255) to ensure nothing interferes with automation
-// vpin = The Vpin defined for the Turntable-EX device driver, default is 600
+// vpin = The Vpin defined for the EX-Turntable device driver, default is 600
 // steps = The target step position
 // activity = The activity performed for this ROUTE (Note do not enclose in quotes "")
 // desc = Description that will appear in throttles (Must use quotes "")
@@ -216,7 +216,7 @@ ALIAS(TTRoute7, 5185)
 
 The calibration sequence is required to determine the number of steps to complete a single 360 degree rotation of the turntable. This avoids having to define step counts in advance, and instead enables an easy, automatic method that is "plug and play" for Conductors. This step value is then stored in the EEPROM for reference.
 
-When Turntable-EX is first installed and started, it will initiate the calibration sequence automatically and display the stored step count in the serial console, as well as writing this value to the EEPROM.
+When EX-Turntable is first installed and started, it will initiate the calibration sequence automatically and display the stored step count in the serial console, as well as writing this value to the EEPROM.
 
 The calibration sequence will first initiate a rotation to home the turntable (it doesn't matter where it is positioned at this point), and will then initiate a second rotation which is when the step counting occurs. Messages are written to the serial console to reflect the various calibration steps.
 
@@ -234,4 +234,4 @@ This results in a three step calibration process, whereby the traverser homes fi
 
 There are a number of items remaining to be completed yet, as well as some extra ideas that could be implemented.
 
-To see all feature requests/enhancements and outstanding bugs that need fixing, refer to the Turntable-EX view of the [DCC++ EX GitHub Project](https://github.com/orgs/DCC-EX/projects/7/views/1).
+To see all feature requests/enhancements and outstanding bugs that need fixing, refer to the EX-Turntable view of the [DCC++ EX GitHub Project](https://github.com/orgs/DCC-EX/projects/7/views/1).
