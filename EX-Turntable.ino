@@ -14,7 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Turntable-EX.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with EX-Turntable.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // Include required libraries.
@@ -165,12 +165,12 @@ void clearEEPROM() {
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
   if (fullTurnSteps == 0) {
-    Serial.println(F("Turntable-EX has not been calibrated yet"));
+    Serial.println(F("EX-Turntable has not been calibrated yet"));
   } else {
 #ifdef FULL_STEP_COUNT    
     Serial.print(F("Manual override has been set for "));
 #else
-    Serial.print(F("Turntable-EX has been calibrated for "));
+    Serial.print(F("EX-Turntable has been calibrated for "));
 #endif
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
@@ -563,7 +563,7 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
   Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
-  Serial.print(F("Turntable-EX version "));
+  Serial.print(F("EX-Turntable version "));
   Serial.println(VERSION);
   Serial.print(F("Available at I2C address 0x"));
   Serial.println(I2C_ADDRESS, HEX);
@@ -618,14 +618,14 @@ void setup() {
 #endif
 
 #if TURNTABLE_EX_MODE == TRAVERSER
-  Serial.println(F("Turntable-EX in TRAVERSER mode"));
+  Serial.println(F("EX-Turntable in TRAVERSER mode"));
 #else
-  Serial.println(F("Turntable-EX in TURNTABLE mode"));
+  Serial.println(F("EX-Turntable in TURNTABLE mode"));
 #endif
 
 #ifdef SENSOR_TESTING
 // If in sensor testing mode, display this, don't enable stepper or I2C
-  Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
+  Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
   Serial.print(F("Home/limit switch current state: "));
   Serial.print(homeSensorState);
   Serial.print(F("/"));
