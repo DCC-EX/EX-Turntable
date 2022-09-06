@@ -102,6 +102,9 @@ bool lastHomeSensorState;                           // Stores the last home sens
 bool lastLimitSensorState;                          // Stores the last limit sensor state.
 unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
 unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
+const byte numChars = 20;                           // Maximum number of serial characters to accept for input.
+char serialInputChars[numChars];                    // Char array for serial characters received.
+bool newSerialData = false;                         // Flag for new serial data being received.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
@@ -546,17 +549,59 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
-// Not in use yet, to be added in a future release using serial command input.
-// // Function to send test commands to self without needing CS online.
-// void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
-//   uint8_t stepsMSB = testSteps >> 8;
-//   uint8_t stepsLSB = testSteps & 0xFF;
-//   Wire.beginTransmission(I2C_ADDRESS);
-//   Wire.write(stepsMSB);
-//   Wire.write(stepsLSB);
-//   Wire.write(testActivity);
-//   Wire.endTransmission();
-// }
+// Function to send test commands to self without needing CS online.
+void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
+  uint8_t stepsMSB = testSteps >> 8;
+  uint8_t stepsLSB = testSteps & 0xFF;
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(stepsMSB);
+  Wire.write(stepsLSB);
+  Wire.write(testActivity);
+  Wire.endTransmission();
+}
+
+// Function to read and process serial input for valid test commands
+void processSerialInput() {
+  static bool serialInProgress = false;
+  static byte serialIndex = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char serialChar;
+  while (Serial.available() > 0 && newSerialData == false) {
+    serialChar = Serial.read();
+    if (serialInProgress == true) {
+      if (serialChar != endMarker) {
+        serialInputChars[serialIndex] = serialChar;
+        serialIndex++;
+        if (serialIndex >= numChars) {
+          serialIndex = numChars - 1;
+        }
+      } else {
+        serialInputChars[serialIndex] = '\0';
+        serialInProgress = false;
+        serialIndex = 0;
+        newSerialData = true;
+      }
+    } else if (serialChar == startMarker) {
+      serialInProgress = true;
+    }
+  }
+  if (newSerialData == true) {
+    Serial.print(F("Received serial input: "));
+    Serial.println(serialInputChars);
+    newSerialData = false;
+    char * strtokIndex;
+    strtokIndex = strtok(serialInputChars," ");
+    uint16_t steps = atoi(strtokIndex);
+    strtokIndex = strtok(NULL," ");
+    uint8_t activity = atoi(strtokIndex);
+    Serial.print(F("Test move "));
+    Serial.print(steps);
+    Serial.print(F(" steps, activity ID "));
+    Serial.println(activity);
+    sendTestCommand(steps, activity);
+  }
+}
 
 void setup() {
 // Basic setup, display what this is.
@@ -723,5 +768,9 @@ void loop() {
     }
   }
 #endif
+
+// Receive and process and serial input for test commands.
+  processSerialInput();
+
 #endif
 }
