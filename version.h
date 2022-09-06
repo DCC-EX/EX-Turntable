@@ -6,6 +6,8 @@
 // 0.5.0-Beta:
 //  - Rename to EX-Turntable in line with re-branding of DCC-EX.
 //  - Add test commands via serial console to replicate diagnostic <D TT vpin steps activity> command for local testing.
+//  - Disable phase switching during homing.
+//  - Increase HOME_SENSITIVITY default to 300 steps due to not moving far enough away from home sensor during calibration.
 // 0.4.0-Beta:
 //  - Introduced support for traversers and turntables that rotate less than 360 degrees.
 //  - Added sensor testing mode that disables all operations and only reports sensor changes to the serial console.
