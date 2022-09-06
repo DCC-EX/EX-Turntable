@@ -204,7 +204,7 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  // if (digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+  setPhase(0);
   if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
