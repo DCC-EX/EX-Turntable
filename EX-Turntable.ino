@@ -557,7 +557,15 @@ void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
   Wire.write(stepsMSB);
   Wire.write(stepsLSB);
   Wire.write(testActivity);
+#ifdef DEBUG
+  if (Wire.endTransmission() == 0) {
+    Serial.print(F("DEBUG: Success sending to own address"));
+  } else {
+    Serial.print(F("DEBUG: FAIL sending to own address"));
+  }
+#else
   Wire.endTransmission();
+#endif
 }
 
 // Function to read and process serial input for valid test commands
