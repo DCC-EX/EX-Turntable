@@ -1,7 +1,7 @@
 /*
  *  © 2022 Peter Cole
  *
- *  This file is part of Turntable-EX
+ *  This file is part of EX-Turntable
  *
  *  This is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
