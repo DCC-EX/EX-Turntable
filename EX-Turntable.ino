@@ -53,7 +53,7 @@
 #endif
 
 #ifndef HOME_SENSITIVITY
-#define HOME_SENSITIVITY 150                        // Define homing sensitivity if not in config.h.
+#define HOME_SENSITIVITY 300                        // Define homing sensitivity if not in config.h.
 #endif
 
 #ifndef PHASE_SWITCHING
@@ -105,6 +105,10 @@ unsigned long lastHomeDebounce = 0;                 // Stores the last time the 
 const byte numChars = 20;                           // Maximum number of serial characters to accept for input.
 char serialInputChars[numChars];                    // Char array for serial characters received.
 bool newSerialData = false;                         // Flag for new serial data being received.
+bool testCommandSent = false;                       // Flag a test command has been sent via serial.
+uint8_t testStepsMSB = 0;                           // MSB of test steps sent via serial.
+uint8_t testStepsLSB = 0;                           // LSB of test steps sent via serial.
+uint8_t testActivity = 0;                           // Activity sent via serial.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
@@ -250,12 +254,21 @@ void receiveEvent(int received) {
 #endif
   int16_t steps;  
   uint8_t activity;
+  uint8_t stepsMSB;
+  uint8_t stepsLSB;
   // We need 3 received bytes in order to care about what's received.
   if (received == 3) {
     // Get our 3 bytes of data, bit shift into steps.
-    uint8_t stepsMSB = Wire.read();
-    uint8_t stepsLSB = Wire.read();
-    activity = Wire.read();
+    if (testCommandSent == true) {
+      stepsMSB = testStepsMSB;
+      stepsLSB = testStepsLSB;
+      activity = testActivity;
+      testCommandSent = false;
+    } else {
+      stepsMSB = Wire.read();
+      stepsLSB = Wire.read();
+      activity = Wire.read();
+    }
 #ifdef DEBUG
     Serial.print(F("DEBUG: stepsMSB:"));
     Serial.print(stepsMSB);
@@ -549,25 +562,6 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
-// Function to send test commands to self without needing CS online.
-void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
-  uint8_t stepsMSB = testSteps >> 8;
-  uint8_t stepsLSB = testSteps & 0xFF;
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(stepsMSB);
-  Wire.write(stepsLSB);
-  Wire.write(testActivity);
-#ifdef DEBUG
-  if (Wire.endTransmission() == 0) {
-    Serial.print(F("DEBUG: Success sending to own address"));
-  } else {
-    Serial.print(F("DEBUG: FAIL sending to own address"));
-  }
-#else
-  Wire.endTransmission();
-#endif
-}
-
 // Function to read and process serial input for valid test commands
 void processSerialInput() {
   static bool serialInProgress = false;
@@ -602,12 +596,15 @@ void processSerialInput() {
     strtokIndex = strtok(serialInputChars," ");
     uint16_t steps = atoi(strtokIndex);
     strtokIndex = strtok(NULL," ");
-    uint8_t activity = atoi(strtokIndex);
+    testActivity = atoi(strtokIndex);
     Serial.print(F("Test move "));
     Serial.print(steps);
     Serial.print(F(" steps, activity ID "));
-    Serial.println(activity);
-    sendTestCommand(steps, activity);
+    Serial.println(testActivity);
+    testStepsMSB = steps >> 8;
+    testStepsLSB = steps & 0xFF;
+    testCommandSent = true;
+    receiveEvent(3);
   }
 }
 

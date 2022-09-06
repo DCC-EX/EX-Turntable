@@ -132,7 +132,7 @@
 //  Define the minimum number of steps the turntable needs to move before the homing sensor
 //  deactivates, which is required during the calibration sequence. For high step count
 //  setups, this may need to be increased.
-// #define HOME_SENSITIVITY 150
+// #define HOME_SENSITIVITY 300
 // 
 //  Override the step count determined by automatic calibration by uncommenting the line
 //  below, and manually defining a specific step count.
