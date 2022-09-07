@@ -81,8 +81,8 @@
 //  ULN2003_HALF_CCW    : ULN2003 in half step mode, counter clockwise homing/calibration
 //  ULN2003_FULL_CW     : ULN2003 in full step mode, clockwise homing/calibration
 //  ULN2003_FULL_CCW    : ULN2003 in full step mode, counter clockwise homing/calibration
-//  TWO_WIRE            : Two wire drivers (eg. A4988, DRV8825)
-//  TWO_WIRE_INV        : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
+//  DRIVER              : Two wire drivers (eg. A4988, DRV8825)
+//  DRIVER_INV          : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
