@@ -1,7 +1,7 @@
 /*
  *  © 2022 Peter Cole
  *
- *  This file is part of Turntable-EX
+ *  This file is part of EX-Turntable
  *
  *  This is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Turntable-EX.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with EX-Turntable.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // Include required libraries.
@@ -53,7 +53,7 @@
 #endif
 
 #ifndef HOME_SENSITIVITY
-#define HOME_SENSITIVITY 150                        // Define homing sensitivity if not in config.h.
+#define HOME_SENSITIVITY 300                        // Define homing sensitivity if not in config.h.
 #endif
 
 #ifndef PHASE_SWITCHING
@@ -102,6 +102,13 @@ bool lastHomeSensorState;                           // Stores the last home sens
 bool lastLimitSensorState;                          // Stores the last limit sensor state.
 unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
 unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
+const byte numChars = 20;                           // Maximum number of serial characters to accept for input.
+char serialInputChars[numChars];                    // Char array for serial characters received.
+bool newSerialData = false;                         // Flag for new serial data being received.
+bool testCommandSent = false;                       // Flag a test command has been sent via serial.
+uint8_t testStepsMSB = 0;                           // MSB of test steps sent via serial.
+uint8_t testStepsLSB = 0;                           // LSB of test steps sent via serial.
+uint8_t testActivity = 0;                           // Activity sent via serial.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
@@ -165,12 +172,12 @@ void clearEEPROM() {
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
   if (fullTurnSteps == 0) {
-    Serial.println(F("Turntable-EX has not been calibrated yet"));
+    Serial.println(F("EX-Turntable has not been calibrated yet"));
   } else {
 #ifdef FULL_STEP_COUNT    
     Serial.print(F("Manual override has been set for "));
 #else
-    Serial.print(F("Turntable-EX has been calibrated for "));
+    Serial.print(F("EX-Turntable has been calibrated for "));
 #endif
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
@@ -197,7 +204,7 @@ void setupStepperDriver() {
 
 // Function to find the home position.
 void moveHome() {
-  // if (digitalRead(homeSensorPin) == HOME_SENSOR_ACTIVE_STATE) {
+  setPhase(0);
   if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
@@ -247,12 +254,21 @@ void receiveEvent(int received) {
 #endif
   int16_t steps;  
   uint8_t activity;
+  uint8_t stepsMSB;
+  uint8_t stepsLSB;
   // We need 3 received bytes in order to care about what's received.
   if (received == 3) {
     // Get our 3 bytes of data, bit shift into steps.
-    uint8_t stepsMSB = Wire.read();
-    uint8_t stepsLSB = Wire.read();
-    activity = Wire.read();
+    if (testCommandSent == true) {
+      stepsMSB = testStepsMSB;
+      stepsLSB = testStepsLSB;
+      activity = testActivity;
+      testCommandSent = false;
+    } else {
+      stepsMSB = Wire.read();
+      stepsLSB = Wire.read();
+      activity = Wire.read();
+    }
 #ifdef DEBUG
     Serial.print(F("DEBUG: stepsMSB:"));
     Serial.print(stepsMSB);
@@ -546,24 +562,58 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
-// Not in use yet, to be added in a future release using serial command input.
-// // Function to send test commands to self without needing CS online.
-// void sendTestCommand(int16_t testSteps, uint8_t testActivity) {
-//   uint8_t stepsMSB = testSteps >> 8;
-//   uint8_t stepsLSB = testSteps & 0xFF;
-//   Wire.beginTransmission(I2C_ADDRESS);
-//   Wire.write(stepsMSB);
-//   Wire.write(stepsLSB);
-//   Wire.write(testActivity);
-//   Wire.endTransmission();
-// }
+// Function to read and process serial input for valid test commands
+void processSerialInput() {
+  static bool serialInProgress = false;
+  static byte serialIndex = 0;
+  char startMarker = '<';
+  char endMarker = '>';
+  char serialChar;
+  while (Serial.available() > 0 && newSerialData == false) {
+    serialChar = Serial.read();
+    if (serialInProgress == true) {
+      if (serialChar != endMarker) {
+        serialInputChars[serialIndex] = serialChar;
+        serialIndex++;
+        if (serialIndex >= numChars) {
+          serialIndex = numChars - 1;
+        }
+      } else {
+        serialInputChars[serialIndex] = '\0';
+        serialInProgress = false;
+        serialIndex = 0;
+        newSerialData = true;
+      }
+    } else if (serialChar == startMarker) {
+      serialInProgress = true;
+    }
+  }
+  if (newSerialData == true) {
+    Serial.print(F("Received serial input: "));
+    Serial.println(serialInputChars);
+    newSerialData = false;
+    char * strtokIndex;
+    strtokIndex = strtok(serialInputChars," ");
+    uint16_t steps = atoi(strtokIndex);
+    strtokIndex = strtok(NULL," ");
+    testActivity = atoi(strtokIndex);
+    Serial.print(F("Test move "));
+    Serial.print(steps);
+    Serial.print(F(" steps, activity ID "));
+    Serial.println(testActivity);
+    testStepsMSB = steps >> 8;
+    testStepsLSB = steps & 0xFF;
+    testCommandSent = true;
+    receiveEvent(3);
+  }
+}
 
 void setup() {
 // Basic setup, display what this is.
   Serial.begin(115200);
   while(!Serial);
   Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
-  Serial.print(F("Turntable-EX version "));
+  Serial.print(F("EX-Turntable version "));
   Serial.println(VERSION);
   Serial.print(F("Available at I2C address 0x"));
   Serial.println(I2C_ADDRESS, HEX);
@@ -618,14 +668,14 @@ void setup() {
 #endif
 
 #if TURNTABLE_EX_MODE == TRAVERSER
-  Serial.println(F("Turntable-EX in TRAVERSER mode"));
+  Serial.println(F("EX-Turntable in TRAVERSER mode"));
 #else
-  Serial.println(F("Turntable-EX in TURNTABLE mode"));
+  Serial.println(F("EX-Turntable in TURNTABLE mode"));
 #endif
 
 #ifdef SENSOR_TESTING
 // If in sensor testing mode, display this, don't enable stepper or I2C
-  Serial.println(F("SENSOR TESTING ENABLED, Turntable-EX operations disabled"));
+  Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
   Serial.print(F("Home/limit switch current state: "));
   Serial.print(homeSensorState);
   Serial.print(F("/"));
@@ -723,5 +773,9 @@ void loop() {
     }
   }
 #endif
+
+// Receive and process and serial input for test commands.
+  processSerialInput();
+
 #endif
 }

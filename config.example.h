@@ -81,8 +81,8 @@
 //  ULN2003_HALF_CCW    : ULN2003 in half step mode, counter clockwise homing/calibration
 //  ULN2003_FULL_CW     : ULN2003 in full step mode, clockwise homing/calibration
 //  ULN2003_FULL_CCW    : ULN2003 in full step mode, counter clockwise homing/calibration
-//  TWO_WIRE            : Two wire drivers (eg. A4988, DRV8825)
-//  TWO_WIRE_INV        : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
+//  A4988               : Two wire drivers (eg. A4988, DRV8825)
+//  A4988_INV           : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
@@ -93,8 +93,8 @@
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
-// #define STEPPER_DRIVER TWO_WIRE
-// #define STEPPER_DRIVER TWO_WIRE_INV
+// #define STEPPER_DRIVER A4988
+// #define STEPPER_DRIVER A4988_INV
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
@@ -132,7 +132,7 @@
 //  Define the minimum number of steps the turntable needs to move before the homing sensor
 //  deactivates, which is required during the calibration sequence. For high step count
 //  setups, this may need to be increased.
-// #define HOME_SENSITIVITY 150
+// #define HOME_SENSITIVITY 300
 // 
 //  Override the step count determined by automatic calibration by uncommenting the line
 //  below, and manually defining a specific step count.
