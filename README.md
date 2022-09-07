@@ -160,6 +160,10 @@ The two commands below are equivalent to turn to step position 100, and invert t
 MOVETT(600, 100, Turn_PInvert)
 ```
 
+## Serial console testing
+
+As of v0.5.0-Beta, the ability to test via the serial console has been implemented with the command ```<steps activity>``` similar to the diagnostic command covered above.
+
 # Advertising the turntable to throttles
 
 The recommended way to implement the turntable positions is to define a custom TURNTABLE_EX() macro that includes both the MOVETT() command with RESERVE()/FREE() and WAITFOR() commands to ensure nothing is able to interfere with the turntable until after movements have completed.
