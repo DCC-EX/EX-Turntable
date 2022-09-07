@@ -93,8 +93,8 @@
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
-// #define STEPPER_DRIVER TWO_WIRE
-// #define STEPPER_DRIVER TWO_WIRE_INV
+// #define STEPPER_DRIVER DRIVER
+// #define STEPPER_DRIVER DRIVER_INV
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
