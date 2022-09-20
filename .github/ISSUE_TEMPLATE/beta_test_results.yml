@@ -44,8 +44,8 @@ body:
       placeholder: For example, config.h, myHal.cpp, myAutomation.h
     validations:
       required: true
-  
-  -type: dropdown
+
+  - type: dropdown
     id: test1
     attributes:
       label: Test 1 - Startup Sequence
@@ -61,7 +61,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
   
-  -type: dropdown
+  - type: dropdown
     id: test2
     attributes:
       label: Test 2 - EX-Turntable is Available
@@ -77,7 +77,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test3
     attributes:
       label: Test 3 - Automatic Phase Switching Enabled
@@ -94,8 +94,8 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
-    id: test3.1
+  - type: dropdown
+    id: test3-1
     attributes:
       label: Test 3, Part 1 - Clockwise
       options:
@@ -105,13 +105,13 @@ body:
       required: true
 
   - type: textarea
-    id: test3.1-comments
+    id: test3-1-comments
     attributes:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
-    id: test3.2
+  - type: dropdown
+    id: test3-2
     attributes:
       label: Test 3, Part 2 - Counter Clockwise
       options:
@@ -121,12 +121,12 @@ body:
       required: true
 
   - type: textarea
-    id: test3.2-comments
+    id: test3-2-comments
     attributes:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test4
     attributes:
       label: Test 4 - Homing
@@ -142,7 +142,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test5
     attributes:
       label: Test 5 - Calibration
@@ -158,7 +158,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test6
     attributes:
       label: Test 6 - LED Output Testing
@@ -175,7 +175,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test7
     attributes:
       label: Test 7 - Accessory Output Testing
@@ -192,7 +192,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test8
     attributes:
       label: Test 8 - Manual Phase Switching
@@ -209,7 +209,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test9
     attributes:
       label: Test 9 - Sensor Testing
@@ -226,7 +226,7 @@ body:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
 
-  -type: dropdown
+  - type: dropdown
     id: test10
     attributes:
       label: Test 10 - Traverser Mode
