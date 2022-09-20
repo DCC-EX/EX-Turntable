@@ -32,7 +32,7 @@ body:
         Stepper motor:
         Homing sensor:
         Limit sensor (if in traverser mode):
-        Dual realy board (if in use):
+        Dual relay board (if in use):
     validations:
       required: true
 
@@ -204,7 +204,7 @@ body:
       required: true
 
   - type: textarea
-    id: test1-comments
+    id: test8-comments
     attributes:
       label: Observations or comments
       description: Please provide any observations or comments on the test.
