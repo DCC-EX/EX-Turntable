@@ -1,0 +1,99 @@
+# Bug report GitHub issue form
+# 
+# This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
+
+name: Bug Report
+description: Submit a bug report
+labels:
+  - Bug
+title: "Bug Report: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a bug report to the DCC-EX team!
+
+        In order to help us to validate the bug and ascertain what's causing it, please provide as much information as possible in this form.
+
+  - type: input
+    id: version
+    attributes:
+      label: EX-Turntable Version
+      description: Please provide the version of EX-Turntable in use.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: EX-Turntable Mode
+      description: Please provide the version of EX-Turntable in use.
+      options:
+        - Turntable
+        - Traverser
+    validations:
+      required: true
+
+  - type: input
+    id: cs-version
+    attributes:
+      label: EX-CommandStation Version
+      description: Please provide the version of EX-CommandStation in use.
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: Please provide a clear and concise description of what the symptoms of the bug are.
+      placeholder: |
+        When issuing a diagnostic command, the turntable spins erratically and launches itself into the air.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce the bug
+      description: Please provide the steps to reproduce the behaviour.
+      placeholder: |
+        1. Turn on EX-Turntable and the CommandStation.
+        2. Execute the command `<D TT 600 300 0>`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expectation
+    attributes:
+      label: Expected behaviour
+      description: Please provide a clear and concise description of what you expected to happen.
+      placeholder: |
+        The turntable should rotate 300 steps from home.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, upload any screenshots here.
+
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware in use
+      description: Please provide details of hardware in use including microcontroller, stepper details, and any other relevant information.
+      placeholder: |
+        Arduino Nano
+        ULN2003 stepper controller
+        28BYJ-48 stepper motor
+        A3144 hall effect sensor
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra-context
+    attributes:
+      label: Additional context
+      description: Please provide any other relevant information that could help us resolve this issue, for example a customised config.h file.

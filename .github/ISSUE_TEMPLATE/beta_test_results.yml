@@ -1,0 +1,250 @@
+# Beta Test Results GitHub issue form
+# 
+# This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
+
+name: Beta Test Results
+description: Use this template to submit the results of EX-Turntable Beta testing
+title: "[Beta Test Results]: "
+labels:
+  - Beta Testing
+  - Regression Tested
+  - Needs Review
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for Beta testing EX-Turntable!
+
+        This test results form is to be used in conjunction with the `EX-Turntable regression testing process <https://github.com/DCC-EX/Support-Planning/wiki/EX-Turntable_Tests>`.
+        
+        Please provide the test results below, and we encourage feedback on the ease of use, reliability, and overall usefullness also.
+  
+  - type: textarea
+    id: test-config
+    attributes:
+      label: Testing Configuration
+      description: Please provide details of your testing configuration.
+      value: |
+        EX-CommandStation version:
+        EX-Turntable version:
+        EX-Turntable microcontroller:
+        Stepper driver:
+        Stepper motor:
+        Homing sensor:
+        Limit sensor (if in traverser mode):
+        Dual realy board (if in use):
+    validations:
+      required: true
+
+  - type: textarea
+    id: config-files
+    attributes:
+      label: Configuration files
+      description: Please upload relevant config files here.
+      placeholder: For example, config.h, myHal.cpp, myAutomation.h
+    validations:
+      required: true
+  
+  -type: dropdown
+    id: test1
+    attributes:
+      label: Test 1 - Startup Sequence
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test1-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+  
+-type: dropdown
+    id: test2
+    attributes:
+      label: Test 2 - EX-Turntable is Available
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test2-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test3
+    attributes:
+      label: Test 3 - Automatic Phase Switching Enabled
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test3-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test3.1
+    attributes:
+      label: Test 3, Part 1 - Clockwise
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test3.1-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test3.2
+    attributes:
+      label: Test 3, Part 2 - Counter Clockwise
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test3.2-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test4
+    attributes:
+      label: Test 4 - Homing
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test4-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test5
+    attributes:
+      label: Test 5 - Calibration
+      options:
+        - Pass
+        - Fail
+    validations:
+      required: true
+
+  - type: textarea
+    id: test5-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test6
+    attributes:
+      label: Test 6 - LED Output Testing
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test6-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test7
+    attributes:
+      label: Test 7 - Accessory Output Testing
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test7-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test8
+    attributes:
+      label: Test 8 - Manual Phase Switching
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test1-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test9
+    attributes:
+      label: Test 9 - Sensor Testing
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test9-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+-type: dropdown
+    id: test10
+    attributes:
+      label: Test 10 - Traverser Mode
+      options:
+        - Pass
+        - Fail
+        - Not Tested
+    validations:
+      required: true
+
+  - type: textarea
+    id: test10-comments
+    attributes:
+      label: Observations or comments
+      description: Please provide any observations or comments on the test.
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: General comments or feedback
+      description: Please provide any additional comments or feedback here.
