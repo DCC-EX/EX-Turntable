@@ -4,9 +4,9 @@
 
 blank_issues_enabled: false
 contact_links:
-  - name: 1. DCC-EX Discord server
+  - name: a. DCC-EX Discord server
     url: https://discord.gg/y2sB4Fp
     about: For the best support experience, join our Discord server
-  - name: 2. DCC-EX Contact and Support page
+  - name: b. DCC-EX Contact and Support page
     url: https://dcc-ex.com/support/index.html
     about: For other support options, refer to our Contact & Support page
