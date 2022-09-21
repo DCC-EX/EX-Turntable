@@ -4,7 +4,7 @@
 
 name: Discord
 description: Join our Discord server
-title: Discord
+title: "Discord"
 body:
   - type: markdown
     attributes:
