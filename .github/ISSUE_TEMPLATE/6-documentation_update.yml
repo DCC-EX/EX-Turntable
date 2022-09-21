@@ -2,7 +2,7 @@
 # 
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
-name: 6. Documentation Update
+name: Documentation Update
 description: Submit a request for documentation updates, or to report broken links or inaccuracies
 title: "[Documentation Update]: "
 labels:
