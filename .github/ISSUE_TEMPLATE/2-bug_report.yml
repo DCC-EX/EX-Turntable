@@ -27,7 +27,7 @@ body:
     id: mode
     attributes:
       label: EX-Turntable Mode
-      description: Please provide the version of EX-Turntable in use.
+      description: Please provide the mode that EX-Turntable is configured for.
       options:
         - Turntable
         - Traverser
