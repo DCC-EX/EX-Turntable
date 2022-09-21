@@ -2,7 +2,7 @@
 # 
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
-name: Feature Request
+name: 5. Feature Request
 description: Suggest a new feature
 title: "[Feature Request]: "
 labels:

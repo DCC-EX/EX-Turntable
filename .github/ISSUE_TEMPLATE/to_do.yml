@@ -2,7 +2,7 @@
 # 
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
-name: To Do
+name: 7. To Do
 description: Create a general To Do item
 title: "[To Do]: "
 labels:

@@ -2,7 +2,7 @@
 # 
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
-name: Beta Test Results
+name: 8. Beta Test Results
 description: Use this template to submit the results of EX-Turntable Beta testing
 title: "[Beta Test Results]: "
 labels:
