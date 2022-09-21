@@ -2,7 +2,7 @@
 # 
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
-name: 3. Bug Report
+name: 3 - Bug Report
 description: Submit a bug report
 labels:
   - Bug
