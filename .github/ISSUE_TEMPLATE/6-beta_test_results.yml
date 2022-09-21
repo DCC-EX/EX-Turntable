@@ -15,7 +15,7 @@ body:
       value: |
         Thanks for Beta testing EX-Turntable!
 
-        This test results form is to be used in conjunction with the `EX-Turntable regression testing process <https://github.com/DCC-EX/Support-Planning/wiki/EX-Turntable_Tests>`.
+        This test results form is to be used in conjunction with the [EX-Turntable regression testing process](https://github.com/DCC-EX/Support-Planning/wiki/EX-Turntable_Tests).
         
         Please provide the test results below, and we encourage feedback on the ease of use, reliability, and overall usefullness also.
   

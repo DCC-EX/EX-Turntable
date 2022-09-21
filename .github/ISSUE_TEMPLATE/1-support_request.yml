@@ -13,7 +13,7 @@ body:
       value: |
         Use this template to request support or assistance with EX-Turntable.
 
-        For a better support experience, feel free to join our `Discord server <https://discord.gg/y2sB4Fp>`, as you will typically get a faster response, and will be able to communicate directly with the DCC-EX team.
+        For a better support experience, feel free to join our [Discord server](https://discord.gg/y2sB4Fp), as you will typically get a faster response, and will be able to communicate directly with the DCC-EX team.
   
   - type: input
     id: version
