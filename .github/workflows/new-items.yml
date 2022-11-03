@@ -66,10 +66,10 @@ jobs:
 
           echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
-          echo 'BACKLOG_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.settings | fromjson.options[] | select(.name=="Backlog") |.id' project_data.json) >> $GITHUB_ENV
-          echo 'TO_DO_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options | select(.name=="To Do") |.id' project_data.json) >> $GITHUB_ENV
-          echo 'NEEDS_REVIEW_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options | select(.name=="Needs Review") |.id' project_data.json) >> $GITHUB_ENV
-          echo 'IN_PROGRESS_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options | select(.name=="In Progress") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'BACKLOG_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options[] | select(.name=="Backlog") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'TO_DO_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options[] | select(.name=="To Do") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'NEEDS_REVIEW_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options[] | select(.name=="Needs Review") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'IN_PROGRESS_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") |.options[] | select(.name=="In Progress") |.id' project_data.json) >> $GITHUB_ENV
 
       - name: Add issue to project
         env:
