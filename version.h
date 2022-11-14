@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.5.0-Beta"
+#define VERSION "0.5.1-Beta"
 
+// 0.5.1-Beta:
+//  - Corrected AccelStepper.cpp modification to apply to DRIVER instead of FULL2WIRE.
 // 0.5.0-Beta:
 //  - Rename to EX-Turntable in line with re-branding of DCC-EX.
 //  - Add test commands via serial console to replicate diagnostic <D TT vpin steps activity> command for local testing.
