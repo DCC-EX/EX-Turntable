@@ -190,7 +190,7 @@ boolean AccelStepper::run()
 // Line commented out below is the original AccelStepper line.
 // AccelStepper::AccelStepper(uint8_t interface, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4, bool enable)
 
-// Turntable-EX modification: add extra flag to enable automatic inversion of two wire drivers at instantiation.
+// EX-Turntable modification: add extra flag to enable automatic inversion of two wire drivers at instantiation.
 AccelStepper::AccelStepper(uint8_t interface, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4, bool enable, bool invert)
 {
     _interface = interface;
@@ -227,7 +227,7 @@ AccelStepper::AccelStepper(uint8_t interface, uint8_t pin1, uint8_t pin2, uint8_
     setAcceleration(1);
 
 // Turntable-EX modification: add extra flag to enable automatic inversion of two wire drivers at instantiation.
-    if (_interface == AccelStepper::FULL2WIRE) {
+    if (_interface == AccelStepper::DRIVER) {
         setEnablePin(_pin[2]);
         if (_invert) {
             setPinsInverted(false, false, true);
