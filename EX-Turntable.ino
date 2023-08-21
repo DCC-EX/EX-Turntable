@@ -1,5 +1,6 @@
 /*
  *  © 2022 Peter Cole
+ *  © 2023 Peter Cole
  *
  *  This file is part of EX-Turntable
  *
@@ -21,12 +22,14 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#include "defines.h"
 #include "AccelStepper.h"
 
 // Include standard stepper definitions, version history, and position definitions.
 #include "standard_steppers.h"
 #include "version.h"
 
+/* Move to defines
 // Ensure AUTO and MANUAL phase switching has a value to test.
 #define AUTO 1
 #define MANUAL 0
@@ -34,7 +37,9 @@
 // Ensure TURNTABLE and TRAVERSER modes also have a value to test.
 #define TURNTABLE 0
 #define TRAVERSER 1
+*/
 
+/* Move to defines
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
@@ -71,6 +76,7 @@
 #define DEBOUNCE_DELAY 0                            // If we're a turntable, use 0 because hall effect sensor likely in use
 #endif
 #endif
+*/
 
 bool lastRunningState;                              // Stores last running state to allow turning the stepper off after moves.
 int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
