@@ -21,9 +21,13 @@
 // Include required libraries.
 #include <Arduino.h>
 #include <Wire.h>
-#include <EEPROM.h>
+// #include <EEPROM.h>
 #include "defines.h"
 #include "AccelStepper.h"
+
+// Include local files
+#include "EEPROMFunctions.h"
+#include "IOFunctions.h"
 
 // Include standard stepper definitions, version history, and position definitions.
 #include "standard_steppers.h"
@@ -118,6 +122,7 @@ uint8_t testActivity = 0;                           // Activity sent via serial.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
+/* Move to EEPROMFunctions
 // Function to retrieve step count from EEPROM.
 // Looks for identifier "TTEX" at 0 to 3.
 // MSB of steps stored in 4.
@@ -174,6 +179,7 @@ void clearEEPROM() {
     EEPROM.write(i, 0);
   }
 }
+*/
 
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
@@ -568,6 +574,7 @@ bool getLimitState() {
   return lastLimitSensorState;
 }
 
+/* Move to SerialFunctions
 // Function to read and process serial input for valid test commands
 void processSerialInput() {
   static bool serialInProgress = false;
@@ -613,6 +620,7 @@ void processSerialInput() {
     receiveEvent(3);
   }
 }
+*/
 
 void setup() {
 // Basic setup, display what this is.
