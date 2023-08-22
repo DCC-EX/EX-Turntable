@@ -17,15 +17,24 @@
  *  along with EX-Turntable.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef IOFUNCTIONS_H
-#define IOFUNCTIONS_H
+#ifndef TURNTABLEFUNCTIONS_H
+#define TURNTABLEFUNCTIONS_H
 
 #include <Arduino.h>
 #include "defines.h"
+#include "AccelStepper.h"
+#include "standard_steppers.h"
 
-void processSerialInput();
-void displayTTEXConfig();
-void receiveEvent(int received);
-void requestEvent();
+AccelStepper stepper;
+
+void setupStepperDriver();
+void moveHome();
+void moveToPosition(int16_t steps, uint8_t phaseSwitch);
+void setPhase(uint8_t phase);
+void processLED();
+void calibration();
+void processAutoPhaseSwitch();
+bool getHomeState();
+bool getLimitState();
 
 #endif

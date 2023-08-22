@@ -21,16 +21,17 @@
 // Include required libraries.
 #include <Arduino.h>
 #include <Wire.h>
-// #include <EEPROM.h>
+// #include <EEPROM.h>  // Move to EEPROMFunctions
 #include "defines.h"
-#include "AccelStepper.h"
+// #include "AccelStepper.h" // Move to TurntableFunctions
 
 // Include local files
 #include "EEPROMFunctions.h"
 #include "IOFunctions.h"
+#include "TurntableFunctions.h"
 
 // Include standard stepper definitions, version history, and position definitions.
-#include "standard_steppers.h"
+// #include "standard_steppers.h" // Move to TurntableFunctions
 #include "version.h"
 
 /* Move to defines
@@ -120,7 +121,7 @@ uint8_t testStepsMSB = 0;                           // MSB of test steps sent vi
 uint8_t testStepsLSB = 0;                           // LSB of test steps sent via serial.
 uint8_t testActivity = 0;                           // Activity sent via serial.
 
-AccelStepper stepper = STEPPER_DRIVER;
+// AccelStepper stepper = STEPPER_DRIVER; // Move to TurntableFunctions
 
 /* Move to EEPROMFunctions
 // Function to retrieve step count from EEPROM.
@@ -181,6 +182,7 @@ void clearEEPROM() {
 }
 */
 
+/* Move to IOFunctions
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
   if (fullTurnSteps == 0) {
@@ -207,7 +209,9 @@ void displayTTEXConfig() {
   Serial.println(F("Manual phase switching enabled"));
 #endif
 }
+*/
 
+/* Move to TurntableFunctions
 // Function to define the stepper parameters.
 void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
@@ -256,7 +260,9 @@ void moveHome() {
     }
   }
 }
+*/
 
+/* Move to IOFunctions
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
 #ifdef DEBUG
@@ -365,7 +371,9 @@ void requestEvent() {
   }
   Wire.write(stepperStatus);
 }
+*/
 
+/* Move to TurntableFunctions
 // Function to move to the indicated position.
 void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
@@ -573,6 +581,7 @@ bool getLimitState() {
   }
   return lastLimitSensorState;
 }
+*/
 
 /* Move to SerialFunctions
 // Function to read and process serial input for valid test commands
