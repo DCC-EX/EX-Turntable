@@ -33,6 +33,12 @@
 
 extern const int16_t sanitySteps;
 extern bool calibrating;
+extern uint8_t homed;
+extern AccelStepper stepper;
+extern int16_t fullTurnSteps;
+extern int16_t phaseSwitchStartSteps;
+extern int16_t phaseSwitchStopSteps;
+extern int16_t lastTarget;
 
 void startupConfiguration();
 void setupStepperDriver();
