@@ -26,10 +26,10 @@
 #include "TurntableFunctions.h"
 #include "EEPROMFunctions.h"
 
-extern bool testCommandSent;                       // Flag a test command has been sent via serial.
-extern uint8_t testStepsMSB;                           // MSB of test steps sent via serial.
-extern uint8_t testStepsLSB;                           // LSB of test steps sent via serial.
-extern uint8_t testActivity;                           // Activity sent via serial.
+extern bool testCommandSent;    // Flag a test command has been sent via serial.
+extern uint8_t testStepsMSB;    // MSB of test steps sent via serial.
+extern uint8_t testStepsLSB;    // LSB of test steps sent via serial.
+extern uint8_t testActivity;    // Activity sent via serial.
 
 void processSerialInput();
 void displayTTEXConfig();
