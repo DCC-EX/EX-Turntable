@@ -19,6 +19,9 @@
 
 #include "EEPROMFunctions.h"
 
+char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
+uint8_t eepromVersion = 1;                          // Version of stored EEPROM data.
+
 // Function to retrieve step count from EEPROM.
 // Looks for identifier "TTEX" at 0 to 3.
 // MSB of steps stored in 4.

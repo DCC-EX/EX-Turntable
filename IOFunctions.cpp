@@ -19,6 +19,14 @@
 
 #include "IOFunctions.h"
 
+const byte numChars = 20;
+char serialInputChars[numChars];
+bool newSerialData = false;
+bool testCommandSent = false;
+uint8_t testStepsMSB = 0;
+uint8_t testStepsLSB = 0;
+uint8_t testActivity = 0;
+
 // Function to read and process serial input for valid test commands
 void processSerialInput() {
   static bool serialInProgress = false;

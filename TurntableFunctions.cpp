@@ -17,7 +17,35 @@
  *  along with EX-Turntable.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*=============================================================
+ * This file contains all functions pertinent to turntable
+ * operation including stepper movements, relay phase switching,
+ * and LED/accessory related functions.
+=============================================================*/
+
 #include "TurntableFunctions.h"
+#include "EEPROMFunctions.h"
+#include "IOFunctions.h"
+
+int16_t lastStep = 0;
+uint8_t homed = 0;
+int16_t lastTarget = sanitySteps;
+const int16_t sanitySteps = SANITY_STEPS;
+const uint8_t limitSensorPin = 2;
+const uint8_t homeSensorPin = 5;
+const uint8_t relay1Pin = 3;
+const uint8_t relay2Pin = 4;
+const uint8_t ledPin = 6;
+const uint8_t accPin = 7;
+uint8_t ledState = 7;
+bool ledOutput = LOW;
+unsigned long ledMillis = 0;
+bool calibrating = false;
+uint8_t calibrationPhase = 0;
+unsigned long calMillis = 0;
+unsigned long lastLimitDebounce = 0;
+unsigned long lastHomeDebounce = 0;
+const int16_t homeSensitivity = HOME_SENSITIVITY;
 
 AccelStepper stepper = STEPPER_DRIVER;
 
