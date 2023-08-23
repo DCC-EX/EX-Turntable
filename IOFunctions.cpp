@@ -184,36 +184,45 @@ void receiveEvent(int received) {
 #ifdef DEBUG
       Serial.println(F("DEBUG: Requested to home"));
 #endif
+      initiateHoming();
+      /* Move to function
       homed = 0;
       lastTarget = sanitySteps;
+      */
     } else if (activity == 3 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Calibration requested"));
 #endif
+      initiateCalibration();
+      /* Move to function
       calibrating = true;
       homed = 0;
       lastTarget = sanitySteps;
       clearEEPROM();
+      */
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
 #ifdef DEBUG
       Serial.print(F("DEBUG: Set LED state to: "));
       Serial.println(activity);
 #endif
-      ledState = activity;
+      setLEDActivity(activity);
+      // ledState = activity; // Move to function
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Turn accessory pin on"));
 #endif
-      digitalWrite(accPin, HIGH);
+      setAccessory(HIGH);
+      // digitalWrite(accPin, HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Turn accessory pin off"));
 #endif
-      digitalWrite(accPin, LOW);
+      setAccessory(LOW);
+      // digitalWrite(accPin, LOW);
     } else {
 #ifdef DEBUG
       Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));

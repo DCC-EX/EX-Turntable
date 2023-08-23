@@ -363,3 +363,27 @@ bool getLimitState() {
   }
   return lastLimitSensorState;
 }
+
+// Function to reset home state, triggering homing to happen
+void initiateHoming() {
+  homed = 0;
+  lastTarget = sanitySteps;
+}
+
+// Function to trigger calibration to begin
+void initiateCalibration() {
+  calibrating = true;
+  homed = 0;
+  lastTarget = sanitySteps;
+  clearEEPROM();
+}
+
+// Function to set LED activity
+void setLEDActivity(uint8_t activity) {
+  ledState = activity;
+}
+
+// Function to set the state of the accessory pin
+void setAccessory(bool state) {
+  digitalWrite(accPin, state);
+}

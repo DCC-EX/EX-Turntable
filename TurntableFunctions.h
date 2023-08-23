@@ -50,5 +50,9 @@ void calibration();
 void processAutoPhaseSwitch();
 bool getHomeState();
 bool getLimitState();
+void initiateHoming();
+void initiateCalibration();
+void setLEDActivity(uint8_t activity);
+void setAccessory(bool state);
 
 #endif
