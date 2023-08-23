@@ -27,13 +27,6 @@
 #include "EEPROMFunctions.h"
 #include "IOFunctions.h"
 
-int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
-uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
-int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
-int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
-int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
-int16_t phaseSwitchStartSteps;                      // Defines the step count at which phase should automatically invert.
-int16_t phaseSwitchStopSteps;                       // Defines the step count at which phase should automatically revert.
 const int16_t sanitySteps = SANITY_STEPS;           // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
 const uint8_t limitSensorPin = 2;                   // Define pin 2 for the traverser mode limit sensor.
 const uint8_t homeSensorPin = 5;                    // Define pin 5 for the home sensor.
@@ -41,6 +34,15 @@ const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
 const uint8_t ledPin = 6;                           // Pin for LED output.
 const uint8_t accPin = 7;                           // Pin for accessory output.
+const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
+
+int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
+uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
+int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
+int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
+int16_t phaseSwitchStartSteps;                      // Defines the step count at which phase should automatically invert.
+int16_t phaseSwitchStopSteps;                       // Defines the step count at which phase should automatically revert.
+int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -53,12 +55,11 @@ bool lastHomeSensorState;                           // Stores the last home sens
 bool lastLimitSensorState;                          // Stores the last limit sensor state.
 unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
 unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
-const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
 
 AccelStepper stepper = STEPPER_DRIVER;
 
 // Function configure sensor pins
-void configureSensorPins() {
+void startupConfiguration() {
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
@@ -71,6 +72,38 @@ void configureSensorPins() {
 #elif LIMIT_SENSOR_ACTIVE_STATE == HIGH
   pinMode(limitSensorPin, INPUT);
 #endif
+#endif
+// Get the current sensor state
+  lastHomeSensorState = digitalRead(homeSensorPin);
+  homeSensorState = getHomeState();
+#if TURNTABLE_EX_MODE == TRAVERSER
+  lastLimitSensorState = digitalRead(limitSensorPin);
+  limitSensorState = getLimitState();
+#endif
+
+// Configure relay output pins
+  pinMode(relay1Pin, OUTPUT);
+  pinMode(relay2Pin, OUTPUT);
+
+// Ensure relays are inactive on startup
+  setPhase(0);
+
+// Configure LED and accessory output pins
+  pinMode(ledPin, OUTPUT);
+  pinMode(accPin, OUTPUT);
+
+// If step count explicitly defined, use that
+#ifdef FULL_STEP_COUNT
+  fullTurnSteps = FULL_STEP_COUNT;
+#else
+// Else read steps from EEPROM
+  fullTurnSteps = getSteps();
+#endif
+  halfTurnSteps = fullTurnSteps / 2;
+
+#if PHASE_SWITCHING == AUTO
+// Calculate phase invert/revert steps
+  processAutoPhaseSwitch();
 #endif
 }
 

@@ -27,6 +27,13 @@ uint8_t testStepsMSB = 0;
 uint8_t testStepsLSB = 0;
 uint8_t testActivity = 0;
 
+// Function to setup Wire library and functions
+void setupWire() {
+  Wire.begin(I2C_ADDRESS);
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+}
+
 // Function to read and process serial input for valid test commands
 void processSerialInput() {
   static bool serialInProgress = false;
@@ -75,6 +82,14 @@ void processSerialInput() {
 
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
+  // Basic setup, display what this is.
+  Serial.begin(115200);
+  while(!Serial);
+  Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
+  Serial.print(F("EX-Turntable version "));
+  Serial.println(VERSION);
+  Serial.print(F("Available at I2C address 0x"));
+  Serial.println(I2C_ADDRESS, HEX);
   if (fullTurnSteps == 0) {
     Serial.println(F("EX-Turntable has not been calibrated yet"));
   } else {
@@ -97,6 +112,28 @@ void displayTTEXConfig() {
   Serial.println(F(" steps from home"));
 #else
   Serial.println(F("Manual phase switching enabled"));
+#endif
+#if TURNTABLE_EX_MODE == TRAVERSER
+  Serial.println(F("EX-Turntable in TRAVERSER mode"));
+#else
+  Serial.println(F("EX-Turntable in TURNTABLE mode"));
+#endif
+
+#ifdef SENSOR_TESTING
+// If in sensor testing mode, display this, don't enable stepper or I2C
+  Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
+  Serial.print(F("Home/limit switch current state: "));
+  Serial.print(homeSensorState);
+  Serial.print(F("/"));
+  Serial.println(limitSensorState);
+  Serial.print(F("Debounce delay: "));
+  Serial.println(DEBOUNCE_DELAY);
+#else
+  if (calibrating) {
+    Serial.println(F("Calibrating..."));
+  } else {
+    Serial.println(F("Homing..."));
+  }
 #endif
 }
 

@@ -31,7 +31,10 @@
 #include "AccelStepper.h"
 #include "standard_steppers.h"
 
-void configureSensorPins();
+extern const int16_t sanitySteps;
+extern bool calibrating;
+
+void startupConfiguration();
 void setupStepperDriver();
 void moveHome();
 void moveToPosition(int16_t steps, uint8_t phaseSwitch);

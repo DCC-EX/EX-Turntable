@@ -20,7 +20,7 @@
 
 // Include required libraries.
 #include <Arduino.h>
-#include <Wire.h>
+// #include <Wire.h>  // Move to IOFunctions
 // #include <EEPROM.h>  // Move to EEPROMFunctions
 #include "defines.h"
 // #include "AccelStepper.h" // Move to TurntableFunctions
@@ -596,16 +596,7 @@ void processSerialInput() {
 */
 
 void setup() {
-// Basic setup, display what this is.
-  Serial.begin(115200);
-  while(!Serial);
-  Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
-  Serial.print(F("EX-Turntable version "));
-  Serial.println(VERSION);
-  Serial.print(F("Available at I2C address 0x"));
-  Serial.println(I2C_ADDRESS, HEX);
-
-  configureSensorPins();
+  startupConfiguration();
 /* Move to TurntableFunctions
 // Configure homing sensor pin
 #if HOME_SENSOR_ACTIVE_STATE == LOW
@@ -623,7 +614,7 @@ void setup() {
   pinMode(limitSensorPin, INPUT);
 #endif
 #endif
-*/
+
 
 // Get the current sensor state
   lastHomeSensorState = digitalRead(homeSensorPin);
@@ -657,7 +648,9 @@ void setup() {
 // Calculate phase invert/revert steps
   processAutoPhaseSwitch();
 #endif
+*/
 
+/* Move to IOFunctions
 #if TURNTABLE_EX_MODE == TRAVERSER
   Serial.println(F("EX-Turntable in TRAVERSER mode"));
 #else
@@ -674,22 +667,26 @@ void setup() {
   Serial.print(F("Debounce delay: "));
   Serial.println(DEBOUNCE_DELAY);
 #else
-// Display the configured stepper details
+*/
+// Display EX-Turntable configuration
   displayTTEXConfig();
 
 // Set up the stepper driver
   setupStepperDriver();
 
+/* Move to IOFunctions
 // Now we're ready, set up I2C.
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
+
   if (calibrating) {
     Serial.println(F("Calibrating..."));
   } else {
     Serial.println(F("Homing..."));
   }
 #endif
+*/
 }
 
 void loop() {
