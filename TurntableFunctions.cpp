@@ -27,22 +27,22 @@
 #include "EEPROMFunctions.h"
 #include "IOFunctions.h"
 
-const int16_t sanitySteps = SANITY_STEPS;           // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
+const long sanitySteps = SANITY_STEPS;              // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
 const uint8_t limitSensorPin = 2;                   // Define pin 2 for the traverser mode limit sensor.
 const uint8_t homeSensorPin = 5;                    // Define pin 5 for the home sensor.
 const uint8_t relay1Pin = 3;                        // Control pin for relay 1.
 const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
 const uint8_t ledPin = 6;                           // Pin for LED output.
 const uint8_t accPin = 7;                           // Pin for accessory output.
-const int16_t homeSensitivity = HOME_SENSITIVITY;   // Define the minimum number of steps required before homing sensor deactivates.
+const long homeSensitivity = HOME_SENSITIVITY;      // Define the minimum number of steps required before homing sensor deactivates.
 
-int16_t lastStep = 0;                               // Holds the last step value we moved to (enables least distance moves).
+long lastStep = 0;                                  // Holds the last step value we moved to (enables least distance moves).
 uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
-int16_t fullTurnSteps;                              // Assign our defined full turn steps from config.h.
-int16_t halfTurnSteps;                              // Defines a half turn to enable moving the least distance.
-int16_t phaseSwitchStartSteps;                      // Defines the step count at which phase should automatically invert.
-int16_t phaseSwitchStopSteps;                       // Defines the step count at which phase should automatically revert.
-int16_t lastTarget = sanitySteps;                   // Holds the last step target (prevents continuous rotatins if homing fails).
+long fullTurnSteps;                                 // Assign our defined full turn steps from config.h.
+long halfTurnSteps;                                 // Defines a half turn to enable moving the least distance.
+long phaseSwitchStartSteps;                         // Defines the step count at which phase should automatically invert.
+long phaseSwitchStopSteps;                          // Defines the step count at which phase should automatically revert.
+long lastTarget = sanitySteps;                      // Holds the last step target (prevents continuous rotatins if homing fails).
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -157,7 +157,7 @@ void moveHome() {
 }
 
 // Function to move to the indicated position.
-void moveToPosition(int16_t steps, uint8_t phaseSwitch) {
+void moveToPosition(long steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
     Serial.print(F("Received notification to move to step postion "));
     Serial.println(steps);

@@ -26,7 +26,7 @@ uint8_t eepromVersion = 1;                          // Version of stored EEPROM 
 // Looks for identifier "TTEX" at 0 to 3.
 // MSB of steps stored in 4.
 // LSB of steps stored in 5.
-int16_t getSteps() {
+long getSteps() {
   char data[4];
   int16_t eepromSteps;
   bool stepsSet = true;
@@ -63,7 +63,7 @@ int16_t getSteps() {
 }
 
 // Function to write step count with "TTEX" identifier to EEPROM.
-void writeEEPROM(int16_t steps) {
+void writeEEPROM(long steps) {
   for (uint8_t i = 0; i < 4; i++) {
     EEPROM.write(i, eepromFlag[i]);
   }

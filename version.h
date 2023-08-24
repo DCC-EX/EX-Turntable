@@ -1,8 +1,12 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.5.1-Beta"
+#define VERSION "0.6.0"
 
+// 0.6.0:
+//  - Rewrite into multiple files
+//  - Convert steps to long to match AccelStepper and cater for large step counts
+//  - Change from move() to moveTo() for absolute positioning to reduce errors
 // 0.5.1-Beta:
 //  - Corrected AccelStepper.cpp modification to apply to DRIVER instead of FULL2WIRE.
 // 0.5.0-Beta:

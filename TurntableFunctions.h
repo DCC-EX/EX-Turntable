@@ -31,19 +31,19 @@
 #include "AccelStepper.h"
 #include "standard_steppers.h"
 
-extern const int16_t sanitySteps;
+extern const long sanitySteps;
 extern bool calibrating;
 extern uint8_t homed;
 extern AccelStepper stepper;
-extern int16_t fullTurnSteps;
-extern int16_t phaseSwitchStartSteps;
-extern int16_t phaseSwitchStopSteps;
-extern int16_t lastTarget;
+extern long fullTurnSteps;
+extern long phaseSwitchStartSteps;
+extern long phaseSwitchStopSteps;
+extern long lastTarget;
 
 void startupConfiguration();
 void setupStepperDriver();
 void moveHome();
-void moveToPosition(int16_t steps, uint8_t phaseSwitch);
+void moveToPosition(long steps, uint8_t phaseSwitch);
 void setPhase(uint8_t phase);
 void processLED();
 void calibration();

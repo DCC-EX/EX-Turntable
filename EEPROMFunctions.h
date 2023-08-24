@@ -25,8 +25,8 @@
 #include "defines.h"
 #include "TurntableFunctions.h"
 
-int16_t getSteps();
-void writeEEPROM(int16_t steps);
+long getSteps();
+void writeEEPROM(long steps);
 void clearEEPROM();
 
 #endif
