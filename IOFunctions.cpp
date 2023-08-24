@@ -66,7 +66,7 @@ void processSerialInput() {
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
-    uint16_t steps = atoi(strtokIndex);
+    long steps = atoi(strtokIndex);
     strtokIndex = strtok(NULL," ");
     testActivity = atoi(strtokIndex);
     Serial.print(F("Test move "));
@@ -144,7 +144,7 @@ void receiveEvent(int received) {
   Serial.print(received);
   Serial.println(F(" bytes"));
 #endif
-  int16_t steps;  
+  long steps;  
   uint8_t activity;
   uint8_t stepsMSB;
   uint8_t stepsLSB;

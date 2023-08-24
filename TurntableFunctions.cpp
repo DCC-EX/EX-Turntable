@@ -161,7 +161,7 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
     Serial.print(F("Received notification to move to step postion "));
     Serial.println(steps);
-    int16_t moveSteps;
+    long moveSteps;
     Serial.print(F("Position steps: "));
     Serial.print(steps);
 #if PHASE_SWITCHING == AUTO

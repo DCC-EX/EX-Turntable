@@ -65,4 +65,7 @@
 #endif
 #endif
 
+// Define current version of EEPROM configuration
+#define EEPROM_VERSION 2
+
 #endif
