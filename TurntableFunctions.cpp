@@ -120,7 +120,7 @@ long minutesToSteps(int16_t minutes) {
   Serial.print(F("Move to angle|minutes: "));
   Serial.print(minutes / 60);
   Serial.print(F("|"));
-  Serial.println(minutes - minutes / 60);
+  Serial.println(minutes - (minutes / 60) * 60);
   Serial.print(F("Conversion: "));
   Serial.println(conversion);
   return (long)conversion;
