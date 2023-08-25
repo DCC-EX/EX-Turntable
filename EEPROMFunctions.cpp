@@ -39,7 +39,8 @@ long getSteps() {
   }
   uint8_t version = EEPROM.read(4);
   if (version != eepromVersion) {
-    stepsSet =false;
+    Serial.println(F("EEPROM version outdated, calibration required"));
+    stepsSet = false;
   }
   if (stepsSet) {
     eepromSteps = ((long)EEPROM.read(5) << 24) + ((long)EEPROM.read(6) << 16) + ((long)EEPROM.read(7) << 8) + (long)EEPROM.read(8);

@@ -23,8 +23,6 @@ const byte numChars = 20;
 char serialInputChars[numChars];
 bool newSerialData = false;
 bool testCommandSent = false;
-// uint8_t testStepsMSB = 0;
-// uint8_t testStepsLSB = 0;
 uint8_t testActivity = 0;
 uint8_t testMinutesMSB = 0;
 uint8_t testMinutesLSB = 0;
@@ -150,21 +148,22 @@ void receiveEvent(int received) {
   Serial.print(received);
   Serial.println(F(" bytes"));
 #endif
+  int16_t minutes;
   long steps;  
   uint8_t activity;
-  uint8_t stepsMSB;
-  uint8_t stepsLSB;
+  uint8_t minutesMSB;
+  uint8_t minutesLSB;
   // We need 3 received bytes in order to care about what's received.
   if (received == 3) {
     // Get our 3 bytes of data, bit shift into steps.
     if (testCommandSent == true) {
-      stepsMSB = testStepsMSB;
-      stepsLSB = testStepsLSB;
+      minutesMSB = testMinutesMSB;
+      minutesLSB = testMinutesLSB;
       activity = testActivity;
       testCommandSent = false;
     } else {
-      stepsMSB = Wire.read();
-      stepsLSB = Wire.read();
+      minutesMSB = Wire.read();
+      minutesLSB = Wire.read();
       activity = Wire.read();
     }
 #ifdef DEBUG
@@ -175,7 +174,8 @@ void receiveEvent(int received) {
     Serial.print(F(", activity:"));
     Serial.println(activity);
 #endif
-    steps = (stepsMSB << 8) + stepsLSB;
+    minutes = (minutesMSB << 8) + minutesLSB;
+    steps = minutesToSteps(minutes);
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
 #ifdef DEBUG
