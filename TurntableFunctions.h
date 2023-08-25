@@ -42,6 +42,7 @@ extern long lastTarget;
 
 void startupConfiguration();
 void setupStepperDriver();
+long minutesToSteps(int16_t minutes);
 void moveHome();
 void moveToPosition(long steps, uint8_t phaseSwitch);
 void setPhase(uint8_t phase);

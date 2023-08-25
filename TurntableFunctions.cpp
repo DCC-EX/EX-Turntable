@@ -35,6 +35,7 @@ const uint8_t relay2Pin = 4;                        // Control pin for relay 2.
 const uint8_t ledPin = 6;                           // Pin for LED output.
 const uint8_t accPin = 7;                           // Pin for accessory output.
 const long homeSensitivity = HOME_SENSITIVITY;      // Define the minimum number of steps required before homing sensor deactivates.
+const int16_t totalMinutes = 21600;                 // Total minutes in one rotation (360 * 60)
 
 long lastStep = 0;                                  // Holds the last step value we moved to (enables least distance moves).
 uint8_t homed = 0;                                  // Flag to indicate homing state: 0 = not homed, 1 = homed, 2 = failed.
@@ -111,6 +112,11 @@ void startupConfiguration() {
 void setupStepperDriver() {
   stepper.setMaxSpeed(STEPPER_MAX_SPEED);
   stepper.setAcceleration(STEPPER_ACCELERATION);
+}
+
+// Function to convert minutes (360 degrees * 60) to steps
+long minutesToSteps(int16_t minutes) {
+  return fullTurnSteps / totalMinutes * minutes;
 }
 
 // Function to find the home position.

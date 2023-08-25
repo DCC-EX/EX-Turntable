@@ -23,9 +23,11 @@ const byte numChars = 20;
 char serialInputChars[numChars];
 bool newSerialData = false;
 bool testCommandSent = false;
-uint8_t testStepsMSB = 0;
-uint8_t testStepsLSB = 0;
+// uint8_t testStepsMSB = 0;
+// uint8_t testStepsLSB = 0;
 uint8_t testActivity = 0;
+uint8_t testMinutesMSB = 0;
+uint8_t testMinutesLSB = 0;
 
 // Function to setup Wire library and functions
 void setupWire() {
@@ -66,17 +68,21 @@ void processSerialInput() {
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
-    long steps = atoi(strtokIndex);
+    int16_t minutes = atoi(strtokIndex);
     strtokIndex = strtok(NULL," ");
     testActivity = atoi(strtokIndex);
-    Serial.print(F("Test move "));
-    Serial.print(steps);
-    Serial.print(F(" steps, activity ID "));
-    Serial.println(testActivity);
-    testStepsMSB = steps >> 8;
-    testStepsLSB = steps & 0xFF;
-    testCommandSent = true;
-    receiveEvent(3);
+    if (minutes < 0) {
+      Serial.println(F("Cannot provide a negative"));
+    } else {
+      Serial.print(F("Test move "));
+      Serial.print(minutes);
+      Serial.print(F(" minutes, activity ID "));
+      Serial.println(testActivity);
+      testMinutesMSB = minutes >> 8;
+      testMinutesLSB = minutes & 0xFF;
+      testCommandSent = true;
+      receiveEvent(3);
+    }
   }
 }
 
@@ -185,22 +191,12 @@ void receiveEvent(int received) {
       Serial.println(F("DEBUG: Requested to home"));
 #endif
       initiateHoming();
-      /* Move to function
-      homed = 0;
-      lastTarget = sanitySteps;
-      */
     } else if (activity == 3 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Calibration requested"));
 #endif
       initiateCalibration();
-      /* Move to function
-      calibrating = true;
-      homed = 0;
-      lastTarget = sanitySteps;
-      clearEEPROM();
-      */
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
 #ifdef DEBUG
@@ -208,21 +204,18 @@ void receiveEvent(int received) {
       Serial.println(activity);
 #endif
       setLEDActivity(activity);
-      // ledState = activity; // Move to function
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Turn accessory pin on"));
 #endif
       setAccessory(HIGH);
-      // digitalWrite(accPin, HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
 #ifdef DEBUG
       Serial.println(F("DEBUG: Turn accessory pin off"));
 #endif
       setAccessory(LOW);
-      // digitalWrite(accPin, LOW);
     } else {
 #ifdef DEBUG
       Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));
