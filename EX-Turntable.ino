@@ -32,6 +32,11 @@ void setup() {
   // Run startup configuration
   startupConfiguration();
 
+  // If we're not sensor testing, start Wire()
+#ifndef SENSOR_TESTING
+  setupWire();
+#endif
+
   // Display EX-Turntable configuration
   displayTTEXConfig();
 
