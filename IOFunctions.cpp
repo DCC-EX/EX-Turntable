@@ -175,7 +175,11 @@ void receiveEvent(int received) {
     Serial.println(activity);
 #endif
     minutes = (minutesMSB << 8) + minutesLSB;
+#ifdef SUPPORT_LARGE_STEPS
     steps = minutesToSteps(minutes);
+#else
+    steps = minutes;
+#endif
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
 #ifdef DEBUG
