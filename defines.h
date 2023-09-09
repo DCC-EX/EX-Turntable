@@ -65,6 +65,10 @@
 #endif
 #endif
 
+#ifndef STEPPER_GEARING_FACTOR
+#define STEPPER_GEARING_FACTOR 1                    // Define the gearing factor to default of 1 if not in config.h
+#endif
+
 // Define current version of EEPROM configuration
 #define EEPROM_VERSION 2
 

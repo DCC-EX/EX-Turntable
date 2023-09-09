@@ -19,13 +19,14 @@
 
 #include "IOFunctions.h"
 
+const unsigned long gearingFactor = STEPPER_GEARING_FACTOR;
 const byte numChars = 20;
 char serialInputChars[numChars];
 bool newSerialData = false;
 bool testCommandSent = false;
 uint8_t testActivity = 0;
-uint8_t testMinutesMSB = 0;
-uint8_t testMinutesLSB = 0;
+uint8_t testStepsMSB = 0;
+uint8_t testStepsLSB = 0;
 
 // Function to setup Wire library and functions
 void setupWire() {
@@ -66,18 +67,18 @@ void processSerialInput() {
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
-    int16_t minutes = atoi(strtokIndex);
+    int16_t steps = atoi(strtokIndex);
     strtokIndex = strtok(NULL," ");
     testActivity = atoi(strtokIndex);
-    if (minutes < 0) {
+    if (steps < 0) {
       Serial.println(F("Cannot provide a negative"));
     } else {
       Serial.print(F("Test move "));
-      Serial.print(minutes);
-      Serial.print(F(" minutes, activity ID "));
+      Serial.print(steps);
+      Serial.print(F(" steps, activity ID "));
       Serial.println(testActivity);
-      testMinutesMSB = minutes >> 8;
-      testMinutesLSB = minutes & 0xFF;
+      testStepsMSB = steps >> 8;
+      testStepsLSB = steps & 0xFF;
       testCommandSent = true;
       receiveEvent(3);
     }
@@ -105,6 +106,8 @@ void displayTTEXConfig() {
     Serial.print(fullTurnSteps);
     Serial.println(F(" steps per revolution"));
   }
+  Serial.print(F("Gearing factor set to "));
+  Serial.println(gearingFactor);
 #if PHASE_SWITCHING == AUTO
   Serial.print(F("Automatic phase switching enabled at "));
   Serial.print(PHASE_SWITCH_ANGLE);
@@ -148,22 +151,22 @@ void receiveEvent(int received) {
   Serial.print(received);
   Serial.println(F(" bytes"));
 #endif
-  int16_t minutes;
+  int16_t receivedSteps;
   long steps;  
   uint8_t activity;
-  uint8_t minutesMSB;
-  uint8_t minutesLSB;
+  uint8_t receivedStepsMSB;
+  uint8_t receivedStepsLSB;
   // We need 3 received bytes in order to care about what's received.
   if (received == 3) {
     // Get our 3 bytes of data, bit shift into steps.
     if (testCommandSent == true) {
-      minutesMSB = testMinutesMSB;
-      minutesLSB = testMinutesLSB;
+      receivedStepsMSB = testStepsMSB;
+      receivedStepsLSB = testStepsLSB;
       activity = testActivity;
       testCommandSent = false;
     } else {
-      minutesMSB = Wire.read();
-      minutesLSB = Wire.read();
+      receivedStepsMSB = Wire.read();
+      receivedStepsLSB = Wire.read();
       activity = Wire.read();
     }
 #ifdef DEBUG
@@ -174,12 +177,8 @@ void receiveEvent(int received) {
     Serial.print(F(", activity:"));
     Serial.println(activity);
 #endif
-    minutes = (minutesMSB << 8) + minutesLSB;
-#ifdef SUPPORT_LARGE_STEPS
-    steps = minutesToSteps(minutes);
-#else
-    steps = minutes;
-#endif
+    receivedSteps = (receivedStepsMSB << 8) + receivedStepsLSB;
+    steps = receivedSteps * gearingFactor;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
 #ifdef DEBUG

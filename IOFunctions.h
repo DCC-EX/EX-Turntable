@@ -31,8 +31,8 @@ extern bool testCommandSent;    // Flag a test command has been sent via serial.
 // extern uint8_t testStepsMSB;    // MSB of test steps sent via serial.
 // extern uint8_t testStepsLSB;    // LSB of test steps sent via serial.
 extern uint8_t testActivity;    // Activity sent via serial.
-extern uint8_t testMinutesMSB;
-extern uint8_t testMinutesLSB;
+extern uint8_t testStepsMSB;
+extern uint8_t testStepsLSB;
 
 void setupWire();
 void processSerialInput();

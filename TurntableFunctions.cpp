@@ -114,18 +114,6 @@ void setupStepperDriver() {
   stepper.setAcceleration(STEPPER_ACCELERATION);
 }
 
-// Function to convert minutes (360 degrees * 60) to steps
-long minutesToSteps(int16_t minutes) {
-  float conversion = (float)fullTurnSteps / (float)totalMinutes * (float)minutes;
-  Serial.print(F("Move to angle|minutes: "));
-  Serial.print(minutes / 60);
-  Serial.print(F("|"));
-  Serial.println(minutes - (minutes / 60) * 60);
-  Serial.print(F("Conversion: "));
-  Serial.println(conversion);
-  return (long)conversion;
-}
-
 // Function to find the home position.
 void moveHome() {
   setPhase(0);
