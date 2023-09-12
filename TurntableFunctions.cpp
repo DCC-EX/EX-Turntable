@@ -24,7 +24,7 @@
 =============================================================*/
 
 #include "TurntableFunctions.h"
-#include "EEPROMFunctions.h"
+// #include "EEPROMFunctions.h"
 #include "IOFunctions.h"
 
 const long sanitySteps = SANITY_STEPS;              // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.
@@ -162,7 +162,7 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
   if (steps != lastStep) {
     Serial.print(F("Received notification to move to step postion "));
     Serial.println(steps);
-    long moveSteps;
+    // long moveSteps;
     Serial.print(F("Position steps: "));
     Serial.print(steps);
 #if PHASE_SWITCHING == AUTO
@@ -171,21 +171,6 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
     Serial.print(F(", Phase switch flag: "));
     Serial.print(phaseSwitch);
 #endif
-#if TURNTABLE_EX_MODE == TRAVERSER
-// If we're in traverser mode, very simple logic, negative move to limit, positive move to home.
-    moveSteps = lastStep - steps;
-#else
-    if ((steps - lastStep) > halfTurnSteps) {
-      moveSteps = steps - fullTurnSteps - lastStep;
-    } else if ((steps - lastStep) < -halfTurnSteps) {
-      moveSteps = fullTurnSteps - lastStep + steps;
-    } else {
-      moveSteps = steps - lastStep;
-    }
-#endif
-    Serial.print(F(" - moving "));
-    Serial.print(moveSteps);
-    Serial.println(F(" steps"));
 #if PHASE_SWITCHING == AUTO
     if ((steps >= 0 && steps < phaseSwitchStartSteps) || (steps <= fullTurnSteps && steps >= phaseSwitchStopSteps)) {
       phaseSwitch = 0;
@@ -198,7 +183,7 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
     setPhase(phaseSwitch);
     lastStep = steps;
     stepper.enableOutputs();
-    stepper.move(moveSteps);
+    stepper.moveTo(steps);
     lastTarget = stepper.targetPosition();
 #ifdef DEBUG
     Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
@@ -206,6 +191,41 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
     Serial.print(F("/"));
     Serial.println(lastTarget);
 #endif
+// #if TURNTABLE_EX_MODE == TRAVERSER
+// // If we're in traverser mode, very simple logic, negative move to limit, positive move to home.
+//     moveSteps = lastStep - steps;
+// #else
+//     if ((steps - lastStep) > halfTurnSteps) {
+//       moveSteps = steps - fullTurnSteps - lastStep;
+//     } else if ((steps - lastStep) < -halfTurnSteps) {
+//       moveSteps = fullTurnSteps - lastStep + steps;
+//     } else {
+//       moveSteps = steps - lastStep;
+//     }
+// #endif
+//     Serial.print(F(" - moving "));
+//     Serial.print(moveSteps);
+//     Serial.println(F(" steps"));
+// #if PHASE_SWITCHING == AUTO
+//     if ((steps >= 0 && steps < phaseSwitchStartSteps) || (steps <= fullTurnSteps && steps >= phaseSwitchStopSteps)) {
+//       phaseSwitch = 0;
+//     } else {
+//       phaseSwitch = 1;
+//     }
+// #endif
+//     Serial.print(F("Setting phase switch flag to: "));
+//     Serial.println(phaseSwitch);
+//     setPhase(phaseSwitch);
+//     lastStep = steps;
+//     stepper.enableOutputs();
+//     stepper.move(moveSteps);
+//     lastTarget = stepper.targetPosition();
+// #ifdef DEBUG
+//     Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
+//     Serial.print(lastStep);
+//     Serial.print(F("/"));
+//     Serial.println(lastTarget);
+// #endif
   }
 }
 

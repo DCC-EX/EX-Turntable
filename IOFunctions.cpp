@@ -19,7 +19,7 @@
 
 #include "IOFunctions.h"
 
-const unsigned long gearingFactor = STEPPER_GEARING_FACTOR;
+unsigned long gearingFactor = STEPPER_GEARING_FACTOR;
 const byte numChars = 20;
 char serialInputChars[numChars];
 bool newSerialData = false;
@@ -178,6 +178,9 @@ void receiveEvent(int received) {
     Serial.println(activity);
 #endif
     receivedSteps = (receivedStepsMSB << 8) + receivedStepsLSB;
+    if (gearingFactor > 10) {
+      gearingFactor = 10;
+    }
     steps = receivedSteps * gearingFactor;
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
