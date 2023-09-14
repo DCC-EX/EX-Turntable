@@ -24,7 +24,6 @@
 =============================================================*/
 
 #include "TurntableFunctions.h"
-// #include "EEPROMFunctions.h"
 #include "IOFunctions.h"
 
 const long sanitySteps = SANITY_STEPS;              // Define an arbitrary number of steps to prevent indefinite spinning if homing/calibrations fails.

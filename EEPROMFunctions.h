@@ -21,7 +21,6 @@
 #define EEPROMFUNCTIONS_H
 
 #include <Arduino.h>
-#include <EEPROM.h>
 #include "defines.h"
 #include "TurntableFunctions.h"
 

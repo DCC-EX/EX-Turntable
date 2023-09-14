@@ -18,6 +18,7 @@
 */
 
 #include "EEPROMFunctions.h"
+#include <EEPROM.h>
 
 char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
 const uint8_t eepromVersion = EEPROM_VERSION;       // Version of stored EEPROM data to invalidate stored steps if config changes.
@@ -69,6 +70,7 @@ long getSteps() {
 
 // Function to write step count with "TTEX" identifier to EEPROM.
 void writeEEPROM(long steps) {
+  (void) EEPROM;
   for (uint8_t i = 0; i < 4; i++) {
     EEPROM.write(i, eepromFlag[i]);
   }
