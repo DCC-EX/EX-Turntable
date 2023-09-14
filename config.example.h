@@ -106,6 +106,11 @@
 //  Define the acceleration and speed settings.
 #define STEPPER_MAX_SPEED 200     // Maximum possible speed the stepper will reach
 #define STEPPER_ACCELERATION 25   // Acceleration and deceleration rate
+// 
+// If using a gearing or microstep setup with larger than 32767 steps, you need to set the
+// gearing factor appropriately.
+// Step counts sent from EX-CommandStation will be multiplied by this number.
+#define STEPPER_GEARING_FACTOR 1
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
