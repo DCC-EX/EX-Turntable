@@ -6,6 +6,7 @@
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts
+//  - Add gearing factor to cope with steps per revolution larger than 32767
 // 0.5.1-Beta:
 //  - Corrected AccelStepper.cpp modification to apply to DRIVER instead of FULL2WIRE.
 // 0.5.0-Beta:
