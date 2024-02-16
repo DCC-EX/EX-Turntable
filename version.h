@@ -1,8 +1,10 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.6.0"
+#define VERSION "0.7.0"
 
+// 0.7.0:
+//  - Fix bug where enabling sensor testing prevents compiling
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts

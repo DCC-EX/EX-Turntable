@@ -18,6 +18,7 @@
 */
 
 #include "IOFunctions.h"
+#include "EEPROMFunctions.h"
 
 unsigned long gearingFactor = STEPPER_GEARING_FACTOR;
 const byte numChars = 20;
@@ -27,6 +28,8 @@ bool testCommandSent = false;
 uint8_t testActivity = 0;
 uint8_t testStepsMSB = 0;
 uint8_t testStepsLSB = 0;
+bool diag = false;
+bool sensorTesting = false;
 
 // Function to setup Wire library and functions
 void setupWire() {
@@ -67,22 +70,89 @@ void processSerialInput() {
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
-    int16_t steps = atoi(strtokIndex);
-    strtokIndex = strtok(NULL," ");
-    testActivity = atoi(strtokIndex);
-    if (steps < 0) {
-      Serial.println(F("Cannot provide a negative"));
-    } else {
-      Serial.print(F("Test move "));
-      Serial.print(steps);
-      Serial.print(F(" steps, activity ID "));
-      Serial.println(testActivity);
-      testStepsMSB = steps >> 8;
-      testStepsLSB = steps & 0xFF;
-      testCommandSent = true;
-      receiveEvent(3);
+    char command = strtokIndex[0];     // first parameter is activity
+    strtokIndex = strtok(NULL," ");     // space separator
+    long steps;
+    if (command == 'M') {
+      steps = atoi(strtokIndex);
+      strtokIndex = strtok(NULL," ");
+      testActivity = atoi(strtokIndex);
+    }
+    switch (command) {
+      case 'D':
+        serialCommandD();
+        break;
+      
+      case 'E':
+        serialCommandE();
+        break;
+
+      case 'M':
+        serialCommandM(steps);
+        break;
+
+      case 'T':
+        serialCommandT();
+        break;
+
+      case 'V':
+        serialCommandV();
+        break;
+
+      default:
+        break;
     }
   }
+}
+
+// D command to enable debug output
+void serialCommandD() {
+  if (diag) {
+    Serial.println(F("Disabling diagnostic output"));
+    diag = false;
+  } else {
+    Serial.println(F("Enabling diagnostic output"));
+    diag = true;
+  }
+}
+
+// E command to erase EEPROM
+void serialCommandE() {
+  Serial.println(F("Erasing full step count from EEPROM"));
+  clearEEPROM();
+}
+
+// M command to move
+void serialCommandM(long steps) {
+  if (steps < 0) {
+    Serial.println(F("Cannot provide a negative step count"));
+  } else {
+    Serial.print(F("Test move "));
+    Serial.print(steps);
+    Serial.print(F(" steps, activity ID "));
+    Serial.println(testActivity);
+    testStepsMSB = steps >> 8;
+    testStepsLSB = steps & 0xFF;
+    testCommandSent = true;
+    receiveEvent(3);
+  }
+}
+
+// T command to perform sensor testing
+void serialCommandT() {
+  if (sensorTesting) {
+    Serial.println(F("Disabling sensor testing mode, reboot required"));
+    sensorTesting = false;
+  } else {
+    Serial.println(F("Enabling sensor testing mode, taking EX-Turntable offline"));
+    Wire.end();
+    sensorTesting = true;
+  }
+}
+
+// V command to display version and other info
+void serialCommandV() {
+  displayTTEXConfig();
 }
 
 // Function to display the defined stepper motor config.
