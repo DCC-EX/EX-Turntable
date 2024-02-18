@@ -125,19 +125,19 @@ void moveHome() {
     lastStep = 0;
     homed = 1;
     Serial.println(F("Turntable homed successfully"));
-#ifdef DEBUG
-    Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
-    Serial.print(lastStep);
-    Serial.print(F("/"));
-    Serial.println(lastTarget);
-#endif
+    if (debug) {
+      Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
+      Serial.print(lastStep);
+      Serial.print(F("/"));
+      Serial.println(lastTarget);
+    }
   } else if(!stepper.isRunning()) {
-#ifdef DEBUG
-    Serial.print(F("DEBUG: Recorded/last actual target: "));
-    Serial.print(lastTarget);
-    Serial.print(F("/"));
-    Serial.println(stepper.targetPosition());
-#endif
+    if (debug) {
+      Serial.print(F("DEBUG: Recorded/last actual target: "));
+      Serial.print(lastTarget);
+      Serial.print(F("/"));
+      Serial.println(stepper.targetPosition());
+    }
     if (stepper.targetPosition() == lastTarget) {
       stepper.setCurrentPosition(0);
       lastStep = 0;
@@ -147,10 +147,10 @@ void moveHome() {
       stepper.enableOutputs();
       stepper.move(sanitySteps);
       lastTarget = stepper.targetPosition();
-#ifdef DEBUG
-      Serial.print(F("DEBUG: lastTarget: "));
-      Serial.println(lastTarget);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: lastTarget: "));
+        Serial.println(lastTarget);
+      }
       Serial.println(F("Homing started"));
     }
   }
@@ -199,12 +199,12 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
     stepper.enableOutputs();
     stepper.move(moveSteps);
     lastTarget = stepper.targetPosition();
-#ifdef DEBUG
-    Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
-    Serial.print(lastStep);
-    Serial.print(F("/"));
-    Serial.println(lastTarget);
-#endif
+    if (debug) {
+      Serial.print(F("DEBUG: Stored values for lastStep/lastTarget: "));
+      Serial.print(lastStep);
+      Serial.print(F("/"));
+      Serial.println(lastTarget);
+    }
   }
 }
 
