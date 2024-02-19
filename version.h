@@ -11,6 +11,7 @@
 //  - Add interactive serial command R to reset the EX-Turntable microcontroller
 //  - Add interactive serial command T to enable/disable sensor testing mode
 //  - Add interactive serial command V to display version and other system info
+//  - Add ability to force single direction rotation only for steppers with a lot of slop
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts

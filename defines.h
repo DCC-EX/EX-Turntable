@@ -72,4 +72,8 @@
 // Define current version of EEPROM configuration
 #define EEPROM_VERSION 2
 
+#if defined(ROTATE_FORWARD_ONLY) && defined(ROTATE_REVERSE_ONLY)
+#error Both ROTATE_FORWARD_ONLY and ROTATE_REVERSE_ONLY defined, please only define one or the other
+#endif
+
 #endif

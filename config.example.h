@@ -113,6 +113,14 @@
 #define STEPPER_GEARING_FACTOR 1
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  If dealing with steppers that have a lot of slop, it can be beneficial to force
+//  rotating in one direction only. Enable one (and one only) of the below options if
+//  a single rotation direction is required.
+//
+//  #define ROTATE_FORWARD_ONLY
+//  #define ROTATE_REVERSE_ONLY
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
 // 
 //  The LED will alternative on/off for these durations.
