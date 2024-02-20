@@ -218,6 +218,14 @@ void displayTTEXConfig() {
   Serial.println(F("EX-Turntable in TURNTABLE mode"));
 #endif
 
+#if defined(ROTATE_FORWARD_ONLY)
+  Serial.println(F("Rotating in forward direction only"));
+#elif defined(ROTATE_REVERSE_ONLY)
+  Serial.println(F("Rotating in reverse direction only"));
+#else
+  Serial.println(F("Rotating/moving in the shortest direction"));
+#endif
+
   // If in sensor testing mode, display this, don't enable stepper or I2C
   if (sensorTesting) {
     Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
