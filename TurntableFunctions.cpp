@@ -174,12 +174,19 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
 // If we're in traverser mode, very simple logic, negative move to limit, positive move to home.
     moveSteps = lastStep - steps;
 #else
-// In turntable mode we can force always moving forwards or reverse
+// In turntable mode we can force always moving forwards or reverse, or (default) shortest distance
 #if defined(ROTATE_FORWARD_ONLY)
     if (debug) Serial.println(F("Force forward move only"));
-    if ()
+    moveSteps = steps - lastStep;
+    if (moveSteps < 0) {
+      moveSteps += fullTurnSteps;
+    }
 #elif defined(ROTATE_REVERSE_ONLY)
-
+    if (debug) Serial.println(F("Force reverse move only"));
+    moveSteps = steps - lastStep;
+    if (moveSteps > 0) {
+      moveSteps -= fullTurnSteps;
+    }
 #else
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
