@@ -12,6 +12,8 @@
 //  - Add interactive serial command T to enable/disable sensor testing mode
 //  - Add interactive serial command V to display version and other system info
 //  - Add ability to force single direction rotation only for steppers with a lot of slop
+//  - Update AccelStepper library to v1.64 and remove need for modification
+//  - Enable inversion of direction, steps, and enable via config.h defines
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts

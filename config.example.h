@@ -22,6 +22,7 @@
 //  Enable sensor testing only, prevents all Turntable-EX operations.
 //  Uncomment this line to disable all normal Turntable-EX operations in order to test
 //  and validate that homing and limit sensors activate and deactivate correctly.
+//  Note that you can enable sensor testing interactively in the serial console with <T>
 // 
 // #define SENSOR_TESTING
 
@@ -59,6 +60,7 @@
 //  it is recommended to change these options.
 // 
 #define PHASE_SWITCHING AUTO
+// #define PHASE_SWITCHING MANUAL
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define automatic phase switching angle.
@@ -77,24 +79,32 @@
 //  Define the stepper controller in use according to those available below, refer to the
 //  documentation for further details on which to select for your application.
 // 
-//  ULN2003_HALF_CW     : ULN2003 in half step mode, clockwise homing/calibration
-//  ULN2003_HALF_CCW    : ULN2003 in half step mode, counter clockwise homing/calibration
-//  ULN2003_FULL_CW     : ULN2003 in full step mode, clockwise homing/calibration
-//  ULN2003_FULL_CCW    : ULN2003 in full step mode, counter clockwise homing/calibration
-//  A4988               : Two wire drivers (eg. A4988, DRV8825)
-//  A4988_INV           : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
+//  ULN2003_HALF    : ULN2003 in half step mode
+//  ULN2003_FULL    : ULN2003 in full step mode
+//  A4988           : Two wire drivers (eg. A4988, DRV8825, TMC2208)
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
 //  some controllers that are pin-compatible with an existing defined controller, and
 //  in those instances, no custom configuration would be required.
 // 
-#define STEPPER_DRIVER ULN2003_HALF_CW
-// #define STEPPER_DRIVER ULN2003_HALF_CCW
-// #define STEPPER_DRIVER ULN2003_FULL_CW
-// #define STEPPER_DRIVER ULN2003_FULL_CCW
+
+#define STEPPER_DRIVER ULN2003_HALF
+// #define STEPPER_DRIVER ULN2003_FULL
 // #define STEPPER_DRIVER A4988
-// #define STEPPER_DRIVER A4988_INV
+// 
+// If you need to invert the direction of the stepper, uncomment this line. This is likely
+// required when using a TMC2208. It may also be required to change the rotation from
+// counter clockwise to clockwise when using the ULN2003.
+// #define INVERT_DIRECTION
+// 
+// When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
+// the step pin. If so, uncomment this line.
+// #define INVERT_STEPS
+// 
+// When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
+// the enable pin behaviour if you wish to have the stepper driver disabled when not moving.
+// #define INVERT_ENABLE
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
@@ -116,6 +126,7 @@
 //  If dealing with steppers that have a lot of slop, it can be beneficial to force
 //  rotating in one direction only. Enable one (and one only) of the below options if
 //  a single rotation direction is required.
+//  NOTE this does not apply in TRAVERSER mode.
 //
 //  #define ROTATE_FORWARD_ONLY
 //  #define ROTATE_REVERSE_ONLY
@@ -134,6 +145,7 @@
 //  stepper drivers and motors.
 // 
 //  Enable debug outputs if required during troubleshooting.
+//  Note you can enable debug output interactively in the serial console with <D>
 // 
 // #define DEBUG
 // 

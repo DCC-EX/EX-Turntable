@@ -55,11 +55,31 @@ bool lastHomeSensorState;                           // Stores the last home sens
 bool lastLimitSensorState;                          // Stores the last limit sensor state.
 unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
 unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
+#ifdef INVERT_DIRECTION
+bool invertDirection = true;
+#else
+bool invertDirection = false;
+#endif
+#ifdef INVERT_STEPS
+bool invertSteps = true;
+#else
+bool invertSteps = false;
+#endif
+#ifdef INVERT_ENABLE
+bool invertEnable = true;
+#else
+bool invertEnable = false;
+#endif
 
 AccelStepper stepper = STEPPER_DRIVER;
 
 // Function configure sensor pins
 void startupConfiguration() {
+#if defined(INVERT_DIRECTION) && SELECTED_DRIVER == A4988_DRIVER
+  stepper.setPinsInverted(invertDirection, invertSteps, invertEnable);
+#elif defined(INVERT_DIRECTION)
+  stepper.setPinsInverted(true, true, true, true, invertEnable);
+#endif
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
