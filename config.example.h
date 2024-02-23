@@ -126,6 +126,7 @@
 //  If dealing with steppers that have a lot of slop, it can be beneficial to force
 //  rotating in one direction only. Enable one (and one only) of the below options if
 //  a single rotation direction is required.
+//  NOTE this does not apply in TRAVERSER mode.
 //
 //  #define ROTATE_FORWARD_ONLY
 //  #define ROTATE_REVERSE_ONLY
