@@ -80,4 +80,15 @@
 #error Traverser mode cannot operate with ROTATE_FORWARD_ONLY or ROTATE_REVERSE_ONLY
 #endif
 
+#define ULN2003_DRIVER 1
+#define A4988_DRIVER 2
+
+#if STEPPER_DRIVER == ULN2003_HALF || STEPPER_DRIVER == ULN2003_FULL
+#define SELECTED_DRIVER ULN2003_DRIVER
+#elif STEPPER_DRIVER == A4988
+#define SELECTED_DRIVER A4988_DRIVER
+#else
+#error "Invalid stepper driver selected"
+#endif
+
 #endif

@@ -75,9 +75,11 @@ AccelStepper stepper = STEPPER_DRIVER;
 
 // Function configure sensor pins
 void startupConfiguration() {
-// #if defined(INVERT_DIRECTION)
+#if defined(INVERT_DIRECTION) && SELECTED_DRIVER == A4988_DRIVER
   stepper.setPinsInverted(invertDirection, invertSteps, invertEnable);
-// #endif
+#elif defined(INVERT_DIRECTION)
+  stepper.setPinsInverted(true, true, true, true, invertEnable);
+#endif
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
