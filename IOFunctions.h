@@ -36,8 +36,10 @@ extern bool sensorTesting;
 
 void setupWire();
 void processSerialInput();
+void serialCommandC();
 void serialCommandD();
 void serialCommandE();
+void serialCommandH();
 void serialCommandM(long steps);
 void serialCommandR();
 void serialCommandT();

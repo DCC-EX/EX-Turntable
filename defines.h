@@ -41,6 +41,14 @@
 #define TURNTABLE_EX_MODE TURNTABLE                 // If the mode isn't defined, put it in turntable mode.
 #endif
 
+#ifndef STEPPER_MAX_SPEED
+#define STEPPER_MAX_SPEED 200                       // Set default max speed if not defined.
+#endif
+
+#ifndef STEPPER_ACCELERATION
+#define STEPPER_ACCELERATION 25                     // Set default acceleration if not defined.
+#endif
+
 #ifndef SANITY_STEPS
 #define SANITY_STEPS 10000                          // Define sanity steps if not in config.h.
 #endif
@@ -71,5 +79,13 @@
 
 // Define current version of EEPROM configuration
 #define EEPROM_VERSION 2
+
+#if defined(ROTATE_FORWARD_ONLY) && defined(ROTATE_REVERSE_ONLY)
+#error Both ROTATE_FORWARD_ONLY and ROTATE_REVERSE_ONLY defined, please only define one or the other
+#endif
+
+#if (TURNTABLE_EX_MODE == TRAVERSER && defined(ROTATE_FORWARD_ONLY)) || (TURNTABLE_EX_MODE == TRAVERSER && defined(ROTATE_REVERSE_ONLY))
+#error Traverser mode cannot operate with ROTATE_FORWARD_ONLY or ROTATE_REVERSE_ONLY
+#endif
 
 #endif

@@ -42,7 +42,7 @@ long fullTurnSteps;                                 // Assign our defined full t
 long halfTurnSteps;                                 // Defines a half turn to enable moving the least distance.
 long phaseSwitchStartSteps;                         // Defines the step count at which phase should automatically invert.
 long phaseSwitchStopSteps;                          // Defines the step count at which phase should automatically revert.
-long lastTarget = sanitySteps;                      // Holds the last step target (prevents continuous rotatins if homing fails).
+long lastTarget = sanitySteps;                      // Holds the last step target (prevents continuous rotation if homing fails).
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -55,11 +55,38 @@ bool lastHomeSensorState;                           // Stores the last home sens
 bool lastLimitSensorState;                          // Stores the last limit sensor state.
 unsigned long lastLimitDebounce = 0;                // Stores the last time the limit sensor switched for debouncing.
 unsigned long lastHomeDebounce = 0;                 // Stores the last time the home sensor switched for debouncing.
+#ifdef INVERT_DIRECTION
+bool invertDirection = true;
+#else
+bool invertDirection = false;
+#endif
+#ifdef INVERT_STEP
+bool invertStep = true;
+#else
+bool invertStep = false;
+#endif
+#ifdef INVERT_ENABLE
+bool invertEnable = true;
+#else
+bool invertEnable = false;
+#endif
 
 AccelStepper stepper = STEPPER_DRIVER;
 
 // Function configure sensor pins
 void startupConfiguration() {
+#if SELECTED_DRIVER == A4988_DRIVER
+  if (debug) {
+    Serial.println(F("DEBUG: invertDirection|invertStep|invertEnable: "));
+    Serial.print(invertDirection);
+    Serial.print(F("|"));
+    Serial.print(invertStep);
+    Serial.print(F("|"));
+    Serial.println(invertEnable);
+  }
+  stepper.setEnablePin(A2);
+  stepper.setPinsInverted(invertDirection, invertStep, invertEnable);
+#endif
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
 #elif HOME_SENSOR_ACTIVE_STATE == HIGH
@@ -174,6 +201,20 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
 // If we're in traverser mode, very simple logic, negative move to limit, positive move to home.
     moveSteps = lastStep - steps;
 #else
+// In turntable mode we can force always moving forwards or reverse, or (default) shortest distance
+#if defined(ROTATE_FORWARD_ONLY)
+    if (debug) Serial.println(F("Force forward move only"));
+    moveSteps = steps - lastStep;
+    if (moveSteps < 0) {
+      moveSteps += fullTurnSteps;
+    }
+#elif defined(ROTATE_REVERSE_ONLY)
+    if (debug) Serial.println(F("Force reverse move only"));
+    moveSteps = steps - lastStep;
+    if (moveSteps > 0) {
+      moveSteps -= fullTurnSteps;
+    }
+#else
     if ((steps - lastStep) > halfTurnSteps) {
       moveSteps = steps - fullTurnSteps - lastStep;
     } else if ((steps - lastStep) < -halfTurnSteps) {
@@ -181,7 +222,8 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
     } else {
       moveSteps = steps - lastStep;
     }
-#endif
+#endif  // Turntable forward/reverse/shortest distance
+#endif  // Turntable/traverser
     Serial.print(F(" - moving "));
     Serial.print(moveSteps);
     Serial.println(F(" steps"));
