@@ -219,11 +219,11 @@ void displayTTEXConfig() {
 #endif
 
 #if defined(ROTATE_FORWARD_ONLY)
-  Serial.println(F("Rotating in forward direction only"));
+  Serial.println(F("Rotating FORWARD only"));
 #elif defined(ROTATE_REVERSE_ONLY)
-  Serial.println(F("Rotating in reverse direction only"));
+  Serial.println(F("Rotating REVERSE only"));
 #else
-  Serial.println(F("Rotating/moving in the shortest direction"));
+  Serial.println(F("Rotating SHORTEST DIRECTION"));
 #endif
 
   // If in sensor testing mode, display this, don't enable stepper or I2C

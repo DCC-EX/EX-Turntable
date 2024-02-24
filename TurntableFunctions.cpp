@@ -71,14 +71,15 @@ bool invertEnable = true;
 bool invertEnable = false;
 #endif
 
-AccelStepper stepper = STEPPER_DRIVER;
+AccelStepper stepper = STEPPER_DEFINITION;
 
 // Function configure sensor pins
 void startupConfiguration() {
-#if defined(INVERT_DIRECTION) && SELECTED_DRIVER == A4988_DRIVER
+#if SELECTED_DRIVER == A4988_DRIVER
+  stepper.setEnablePin(A2);
   stepper.setPinsInverted(invertDirection, invertSteps, invertEnable);
-#elif defined(INVERT_DIRECTION)
-  stepper.setPinsInverted(true, true, true, true, invertEnable);
+#else
+  stepper.setPinsInverted(invertDirection, invertDirection, invertDirection, invertDirection, invertEnable);
 #endif
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
