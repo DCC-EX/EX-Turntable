@@ -278,6 +278,18 @@ void displayTTEXConfig() {
   Serial.println(F("INVERT_ENABLE enabled"));
 #endif
 
+  Serial.print(F("STEPPER_MAX_SPEED "));
+  Serial.println(STEPPER_MAX_SPEED);
+  Serial.print(F("STEPPER_ACCELERATION "));
+  Serial.println(STEPPER_ACCELERATION);
+
+  if (debug) {
+    Serial.print(F("DEBUG: maxSpeed()|acceleration(): "));
+    Serial.print(stepper.maxSpeed());
+    Serial.print(F("|"));
+    Serial.println(stepper.acceleration());
+  }
+
   // If in sensor testing mode, display this, don't enable stepper or I2C
   if (sensorTesting) {
     Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));

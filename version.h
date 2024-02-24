@@ -14,6 +14,7 @@
 //  - Add ability to force single direction rotation only for steppers with a lot of slop
 //  - Update AccelStepper library to v1.64 and remove need for modification
 //  - Enable inversion of direction, steps, and enable via config.h defines
+//  - Set default driver type to A4988
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts

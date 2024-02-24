@@ -32,14 +32,14 @@ void setup() {
   // Run startup configuration
   startupConfiguration();
 
+  // Set up the stepper driver
+  setupStepperDriver();
+
   // If we're not sensor testing, start Wire()
   if (!sensorTesting) setupWire();
 
   // Display EX-Turntable configuration
   displayTTEXConfig();
-
-  // Set up the stepper driver
-  setupStepperDriver();
 }
 
 void loop() {
