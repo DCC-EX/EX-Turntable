@@ -74,8 +74,6 @@ void processSerialInput() {
     }
   }
   if (newSerialData == true) {
-    Serial.print(F("Received serial input: "));
-    Serial.println(serialInputChars);
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
@@ -83,11 +81,15 @@ void processSerialInput() {
     strtokIndex = strtok(NULL," ");     // space separator
     long steps;
     if (command == 'M') {
-      steps = atoi(strtokIndex);
+      steps = atol(strtokIndex);
       strtokIndex = strtok(NULL," ");
       testActivity = atoi(strtokIndex);
     }
     switch (command) {
+      case 'C':
+        serialCommandC();
+        break;
+      
       case 'D':
         serialCommandD();
         break;
@@ -96,6 +98,10 @@ void processSerialInput() {
         serialCommandE();
         break;
 
+      case 'H':
+        serialCommandH();
+        break;
+      
       case 'M':
         serialCommandM(steps);
         break;
@@ -118,6 +124,17 @@ void processSerialInput() {
   }
 }
 
+// C command to initiate calibration
+void serialCommandC() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <C>"));
+    return;
+  }
+  if (!calibrating || homed == 2) {
+    initiateCalibration();
+  }
+}
+
 // D command to enable debug output
 void serialCommandD() {
   if (debug) {
@@ -131,6 +148,10 @@ void serialCommandD() {
 
 // E command to erase EEPROM
 void serialCommandE() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <E>"));
+    return;
+  }
   Serial.println(F("Erasing full step count from EEPROM"));
   clearEEPROM();
 #ifndef FULL_STEP_COUNT
@@ -139,10 +160,27 @@ void serialCommandE() {
 #endif
 }
 
+// H command to initiate homing
+void serialCommandH() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <H>"));
+    return;
+  }
+  if (!calibrating || homed == 2) {
+    initiateHoming();
+  }
+}
+
 // M command to move
 void serialCommandM(long steps) {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <M>"));
+    return;
+  }
   if (steps < 0) {
     Serial.println(F("Cannot provide a negative step count"));
+  } else if (steps > 32767) {
+    Serial.println(F("Step count too large, refer to the documentation for large step counts > 32767"));
   } else {
     Serial.print(F("Test move "));
     Serial.print(steps);
@@ -162,6 +200,10 @@ void serialCommandR() {
 
 // T command to perform sensor testing
 void serialCommandT() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <T>"));
+    return;
+  }
   if (sensorTesting) {
     Serial.println(F("Disabling sensor testing mode, reboot required"));
     sensorTesting = false;
@@ -226,6 +268,16 @@ void displayTTEXConfig() {
   Serial.println(F("Rotating SHORTEST DIRECTION"));
 #endif
 
+#if defined(INVERT_DIRECTION)
+  Serial.println(F("INVERT_DIRECTION enabled"));
+#endif
+#if defined(INVERT_STEP)
+  Serial.println(F("INVERT_STEP enabled"));
+#endif
+#if defined(INVERT_ENABLE)
+  Serial.println(F("INVERT_ENABLE enabled"));
+#endif
+
   // If in sensor testing mode, display this, don't enable stepper or I2C
   if (sensorTesting) {
     Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
@@ -263,19 +315,25 @@ void receiveEvent(int received) {
       receivedStepsLSB = Wire.read();
       activity = Wire.read();
     }
-    if (debug) {
-      Serial.print(F("DEBUG: receivedStepsMSB:"));
-      Serial.print(receivedStepsMSB);
-      Serial.print(F(", receivedStepsLSB:"));
-      Serial.print(receivedStepsLSB);
-      Serial.print(F(", activity:"));
-      Serial.println(activity);
-    }
     receivedSteps = (receivedStepsMSB << 8) + receivedStepsLSB;
     if (gearingFactor > 10) {
       gearingFactor = 10;
     }
     steps = receivedSteps * gearingFactor;
+    if (debug) {
+      Serial.print(F("DEBUG: receivedStepsMSB|receivedStepsLSB|activity: "));
+      Serial.print(receivedStepsMSB);
+      Serial.print(F("|"));
+      Serial.print(receivedStepsLSB);
+      Serial.print(F("|"));
+      Serial.println(activity);
+      Serial.print(F("DEBUG: gearingFactor|receivedSteps|steps: "));
+      Serial.print(gearingFactor);
+      Serial.print(F("|"));
+      Serial.print(receivedSteps);
+      Serial.print(F("|"));
+      Serial.println(steps);
+    }
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
       if (debug) {

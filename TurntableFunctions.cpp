@@ -42,7 +42,7 @@ long fullTurnSteps;                                 // Assign our defined full t
 long halfTurnSteps;                                 // Defines a half turn to enable moving the least distance.
 long phaseSwitchStartSteps;                         // Defines the step count at which phase should automatically invert.
 long phaseSwitchStopSteps;                          // Defines the step count at which phase should automatically revert.
-long lastTarget = sanitySteps;                      // Holds the last step target (prevents continuous rotatins if homing fails).
+long lastTarget = sanitySteps;                      // Holds the last step target (prevents continuous rotation if homing fails).
 uint8_t ledState = 7;                               // Flag for the LED state: 4 on, 5 slow, 6 fast, 7 off.
 bool ledOutput = LOW;                               // Boolean for the actual state of the output LED pin.
 unsigned long ledMillis = 0;                        // Required for non blocking LED blink rate timing.
@@ -60,10 +60,10 @@ bool invertDirection = true;
 #else
 bool invertDirection = false;
 #endif
-#ifdef INVERT_STEPS
-bool invertSteps = true;
+#ifdef INVERT_STEP
+bool invertStep = true;
 #else
-bool invertSteps = false;
+bool invertStep = false;
 #endif
 #ifdef INVERT_ENABLE
 bool invertEnable = true;
@@ -77,9 +77,7 @@ AccelStepper stepper = STEPPER_DEFINITION;
 void startupConfiguration() {
 #if SELECTED_DRIVER == A4988_DRIVER
   stepper.setEnablePin(A2);
-  stepper.setPinsInverted(invertDirection, invertSteps, invertEnable);
-#else
-  stepper.setPinsInverted(invertDirection, invertDirection, invertDirection, invertDirection, invertEnable);
+  stepper.setPinsInverted(invertDirection, invertStep, invertEnable);
 #endif
 #if HOME_SENSOR_ACTIVE_STATE == LOW
   pinMode(homeSensorPin, INPUT_PULLUP);
