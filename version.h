@@ -5,8 +5,10 @@
 
 // 0.7.0:
 //  - Fix bug where enabling sensor testing prevents compiling
+//  - Add interactive serial command C to initiate calibration
 //  - Add interactive serial command D to enable/disable debug output in serial console
 //  - Add interactive serial command E to erase calibration steps stored in EEPROM
+//  - Add interactive serial command H to initiate homing
 //  - Change movement command from <steps activity> to <M steps activity>
 //  - Add interactive serial command R to reset the EX-Turntable microcontroller
 //  - Add interactive serial command T to enable/disable sensor testing mode
@@ -14,7 +16,6 @@
 //  - Add ability to force single direction rotation only for steppers with a lot of slop
 //  - Update AccelStepper library to v1.64 and remove need for modification
 //  - Enable inversion of direction, steps, and enable via config.h defines
-//  - Set default driver type to A4988
 // 0.6.0:
 //  - Rewrite into multiple files
 //  - Convert steps to long to match AccelStepper and cater for large step counts
