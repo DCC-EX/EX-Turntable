@@ -91,11 +91,11 @@
 //  in those instances, no custom configuration would be required.
 // 
 
-// #define STEPPER_DRIVER ULN2003_HALF_CW
+#define STEPPER_DRIVER ULN2003_HALF_CW
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
-#define STEPPER_DRIVER A4988
+// #define STEPPER_DRIVER A4988
 // 
 // When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
 // the direction pin. This is likely required when using a TMC2208. This has no effect on
