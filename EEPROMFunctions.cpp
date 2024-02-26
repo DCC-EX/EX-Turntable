@@ -19,6 +19,7 @@
 
 #include "EEPROMFunctions.h"
 #include <EEPROM.h>
+#include "IOFunctions.h"
 
 char eepromFlag[4] = {'T', 'T', 'E', 'X'};          // EEPROM location 0 to 3 should contain TTEX if we have stored steps.
 const uint8_t eepromVersion = EEPROM_VERSION;       // Version of stored EEPROM data to invalidate stored steps if config changes.
@@ -46,23 +47,23 @@ long getSteps() {
   if (stepsSet) {
     eepromSteps = ((long)EEPROM.read(5) << 24) + ((long)EEPROM.read(6) << 16) + ((long)EEPROM.read(7) << 8) + (long)EEPROM.read(8);
     if (eepromSteps <= sanitySteps) {
-#ifdef DEBUG
-      Serial.print(F("DEBUG: TTEX steps defined in EEPROM: "));
-      Serial.println(eepromSteps);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: TTEX steps defined in EEPROM: "));
+        Serial.println(eepromSteps);
+      }
       return eepromSteps;
     } else {
-#ifdef DEBUG
-      Serial.print(F("DEBUG: TTEX steps defined in EEPROM are invalid: "));
-      Serial.println(eepromSteps);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: TTEX steps defined in EEPROM are invalid: "));
+        Serial.println(eepromSteps);
+      }
       calibrating = true;
       return 0;
     }
   } else {
-#ifdef DEBUG
-    Serial.println(F("DEBUG: TTEX steps not defined in EEPROM"));
-#endif
+    if (debug) {
+      Serial.println(F("DEBUG: TTEX steps not defined in EEPROM"));
+    }
     calibrating = true;
     return 0;
   }

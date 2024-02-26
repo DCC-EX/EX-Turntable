@@ -18,6 +18,8 @@
 */
 
 #include "IOFunctions.h"
+#include "EEPROMFunctions.h"
+#include <avr/wdt.h>
 
 unsigned long gearingFactor = STEPPER_GEARING_FACTOR;
 const byte numChars = 20;
@@ -27,6 +29,16 @@ bool testCommandSent = false;
 uint8_t testActivity = 0;
 uint8_t testStepsMSB = 0;
 uint8_t testStepsLSB = 0;
+#ifdef DEBUG
+bool debug = true;
+#else
+bool debug = false;
+#endif
+#ifdef SENSOR_TESTING
+bool sensorTesting = true;
+#else
+bool sensorTesting = false;
+#endif
 
 // Function to setup Wire library and functions
 void setupWire() {
@@ -62,27 +74,149 @@ void processSerialInput() {
     }
   }
   if (newSerialData == true) {
-    Serial.print(F("Received serial input: "));
-    Serial.println(serialInputChars);
     newSerialData = false;
     char * strtokIndex;
     strtokIndex = strtok(serialInputChars," ");
-    int16_t steps = atoi(strtokIndex);
-    strtokIndex = strtok(NULL," ");
-    testActivity = atoi(strtokIndex);
-    if (steps < 0) {
-      Serial.println(F("Cannot provide a negative"));
-    } else {
-      Serial.print(F("Test move "));
-      Serial.print(steps);
-      Serial.print(F(" steps, activity ID "));
-      Serial.println(testActivity);
-      testStepsMSB = steps >> 8;
-      testStepsLSB = steps & 0xFF;
-      testCommandSent = true;
-      receiveEvent(3);
+    char command = strtokIndex[0];     // first parameter is activity
+    strtokIndex = strtok(NULL," ");     // space separator
+    long steps;
+    if (command == 'M') {
+      steps = atol(strtokIndex);
+      strtokIndex = strtok(NULL," ");
+      testActivity = atoi(strtokIndex);
+    }
+    switch (command) {
+      case 'C':
+        serialCommandC();
+        break;
+      
+      case 'D':
+        serialCommandD();
+        break;
+      
+      case 'E':
+        serialCommandE();
+        break;
+
+      case 'H':
+        serialCommandH();
+        break;
+      
+      case 'M':
+        serialCommandM(steps);
+        break;
+
+      case 'R':
+        serialCommandR();
+        break;
+
+      case 'T':
+        serialCommandT();
+        break;
+
+      case 'V':
+        serialCommandV();
+        break;
+
+      default:
+        break;
     }
   }
+}
+
+// C command to initiate calibration
+void serialCommandC() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <C>"));
+    return;
+  }
+  if (!calibrating || homed == 2) {
+    initiateCalibration();
+  }
+}
+
+// D command to enable debug output
+void serialCommandD() {
+  if (debug) {
+    Serial.println(F("Disabling debug output"));
+    debug = false;
+  } else {
+    Serial.println(F("Enabling debug output"));
+    debug = true;
+  }
+}
+
+// E command to erase EEPROM
+void serialCommandE() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <E>"));
+    return;
+  }
+  Serial.println(F("Erasing full step count from EEPROM"));
+  clearEEPROM();
+#ifndef FULL_STEP_COUNT
+  Serial.println(F("Resetting full step count to 0"));
+  fullTurnSteps = 0;
+#endif
+}
+
+// H command to initiate homing
+void serialCommandH() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <H>"));
+    return;
+  }
+  if (!calibrating || homed == 2) {
+    initiateHoming();
+  }
+}
+
+// M command to move
+void serialCommandM(long steps) {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <M>"));
+    return;
+  }
+  if (steps < 0) {
+    Serial.println(F("Cannot provide a negative step count"));
+  } else if (steps > 32767) {
+    Serial.println(F("Step count too large, refer to the documentation for large step counts > 32767"));
+  } else {
+    Serial.print(F("Test move "));
+    Serial.print(steps);
+    Serial.print(F(" steps, activity ID "));
+    Serial.println(testActivity);
+    testStepsMSB = steps >> 8;
+    testStepsLSB = steps & 0xFF;
+    testCommandSent = true;
+    receiveEvent(3);
+  }
+}
+
+void serialCommandR() {
+  wdt_enable(WDTO_15MS);
+  delay(50);
+}
+
+// T command to perform sensor testing
+void serialCommandT() {
+  if (stepper.isRunning()) {
+    Serial.println(F("Stepper is running, ignoring <T>"));
+    return;
+  }
+  if (sensorTesting) {
+    Serial.println(F("Disabling sensor testing mode, reboot required"));
+    sensorTesting = false;
+  } else {
+    Serial.println(F("Enabling sensor testing mode, taking EX-Turntable offline"));
+    Wire.end();
+    sensorTesting = true;
+  }
+}
+
+// V command to display version and other info
+void serialCommandV() {
+  displayTTEXConfig();
 }
 
 // Function to display the defined stepper motor config.
@@ -126,31 +260,55 @@ void displayTTEXConfig() {
   Serial.println(F("EX-Turntable in TURNTABLE mode"));
 #endif
 
-#ifdef SENSOR_TESTING
-// If in sensor testing mode, display this, don't enable stepper or I2C
-  Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
-  Serial.print(F("Home/limit switch current state: "));
-  Serial.print(homeSensorState);
-  Serial.print(F("/"));
-  Serial.println(limitSensorState);
-  Serial.print(F("Debounce delay: "));
-  Serial.println(DEBOUNCE_DELAY);
+#if defined(ROTATE_FORWARD_ONLY)
+  Serial.println(F("Rotating FORWARD only"));
+#elif defined(ROTATE_REVERSE_ONLY)
+  Serial.println(F("Rotating REVERSE only"));
 #else
-  if (calibrating) {
-    Serial.println(F("Calibrating..."));
-  } else {
-    Serial.println(F("Homing..."));
-  }
+  Serial.println(F("Rotating SHORTEST DIRECTION"));
 #endif
+
+#if defined(INVERT_DIRECTION)
+  Serial.println(F("INVERT_DIRECTION enabled"));
+#endif
+#if defined(INVERT_STEP)
+  Serial.println(F("INVERT_STEP enabled"));
+#endif
+#if defined(INVERT_ENABLE)
+  Serial.println(F("INVERT_ENABLE enabled"));
+#endif
+
+  Serial.print(F("STEPPER_MAX_SPEED "));
+  Serial.println(STEPPER_MAX_SPEED);
+  Serial.print(F("STEPPER_ACCELERATION "));
+  Serial.println(STEPPER_ACCELERATION);
+
+  if (debug) {
+    Serial.print(F("DEBUG: maxSpeed()|acceleration(): "));
+    Serial.print(stepper.maxSpeed());
+    Serial.print(F("|"));
+    Serial.println(stepper.acceleration());
+  }
+
+  // If in sensor testing mode, display this, don't enable stepper or I2C
+  if (sensorTesting) {
+    Serial.println(F("SENSOR TESTING ENABLED, EX-Turntable operations disabled"));
+    Serial.print(F("Home/limit switch current state: "));
+    Serial.print(homeSensorState);
+    Serial.print(F("/"));
+    Serial.println(limitSensorState);
+    Serial.print(F("Debounce delay: "));
+    Serial.println(DEBOUNCE_DELAY);
+  }
 }
 
 // Function to define the action on a received I2C event.
 void receiveEvent(int received) {
-#ifdef DEBUG
-  Serial.print(F("DEBUG: Received "));
-  Serial.print(received);
-  Serial.println(F(" bytes"));
-#endif
+  if (debug) {
+    Serial.print(F("DEBUG: Received "));
+    Serial.print(received);
+    Serial.println(F(" bytes"));
+  }
   int16_t receivedSteps;
   long steps;  
   uint8_t activity;
@@ -169,72 +327,78 @@ void receiveEvent(int received) {
       receivedStepsLSB = Wire.read();
       activity = Wire.read();
     }
-#ifdef DEBUG
-    Serial.print(F("DEBUG: stepsMSB:"));
-    Serial.print(stepsMSB);
-    Serial.print(F(", stepsLSB:"));
-    Serial.print(stepsLSB);
-    Serial.print(F(", activity:"));
-    Serial.println(activity);
-#endif
     receivedSteps = (receivedStepsMSB << 8) + receivedStepsLSB;
     if (gearingFactor > 10) {
       gearingFactor = 10;
     }
     steps = receivedSteps * gearingFactor;
+    if (debug) {
+      Serial.print(F("DEBUG: receivedStepsMSB|receivedStepsLSB|activity: "));
+      Serial.print(receivedStepsMSB);
+      Serial.print(F("|"));
+      Serial.print(receivedStepsLSB);
+      Serial.print(F("|"));
+      Serial.println(activity);
+      Serial.print(F("DEBUG: gearingFactor|receivedSteps|steps: "));
+      Serial.print(gearingFactor);
+      Serial.print(F("|"));
+      Serial.print(receivedSteps);
+      Serial.print(F("|"));
+      Serial.println(steps);
+    }
     if (steps <= fullTurnSteps && activity < 2 && !stepper.isRunning() && !calibrating) {
       // Activities 0/1 require turning and setting phase, process only if stepper is not running.
-#ifdef DEBUG
-      Serial.print(F("DEBUG: Requested valid step move to: "));
-      Serial.print(steps);
-      Serial.print(F(" with phase switch: "));
-      Serial.println(activity);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: Requested valid step move to: "));
+        Serial.print(steps);
+        Serial.print(F(" with phase switch: "));
+        Serial.println(activity);
+      }
       moveToPosition(steps, activity);
     } else if (activity == 2 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 2 needs to reset our homed flag to initiate the homing process, only if stepper not running.
-#ifdef DEBUG
-      Serial.println(F("DEBUG: Requested to home"));
-#endif
+      if (debug) {
+        Serial.println(F("DEBUG: Requested to home"));
+      }
       initiateHoming();
     } else if (activity == 3 && !stepper.isRunning() && (!calibrating || homed == 2)) {
       // Activity 3 will initiate calibration sequence, only if stepper not running.
-#ifdef DEBUG
-      Serial.println(F("DEBUG: Calibration requested"));
-#endif
+      if (debug) {
+        Serial.println(F("DEBUG: Calibration requested"));
+      }
       initiateCalibration();
     } else if (activity > 3 && activity < 8) {
       // Activities 4 through 7 set LED state.
-#ifdef DEBUG
-      Serial.print(F("DEBUG: Set LED state to: "));
-      Serial.println(activity);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: Set LED state to: "));
+        Serial.println(activity);
+      }
       setLEDActivity(activity);
     } else if (activity == 8) {
       // Activity 8 turns accessory pin on at any time.
-#ifdef DEBUG
-      Serial.println(F("DEBUG: Turn accessory pin on"));
-#endif
+      if (debug) {
+        Serial.println(F("DEBUG: Turn accessory pin on"));
+      }
       setAccessory(HIGH);
     } else if (activity == 9) {
       // Activity 9 turns accessory pin off at any time.
-#ifdef DEBUG
-      Serial.println(F("DEBUG: Turn accessory pin off"));
-#endif
+      if (debug) {
+        Serial.println(F("DEBUG: Turn accessory pin off"));
+      }
       setAccessory(LOW);
     } else {
-#ifdef DEBUG
-      Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));
-      Serial.print(steps);
-      Serial.print(F(" steps, activity: "));
-      Serial.println(activity);
-#endif
+      if (debug) {
+        Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));
+        Serial.print(steps);
+        Serial.print(F(" steps, activity: "));
+        Serial.println(activity);
+      }
     }
   } else {
   // Even if we have nothing to do, we need to read and discard all the bytes to avoid timeouts in the CS.
-#ifdef DEBUG
-    Serial.println(F("DEBUG: Incorrect number of bytes received, discarding"));
-#endif
+    if (debug) {
+      Serial.println(F("DEBUG: Incorrect number of bytes received, discarding"));
+    }
     while (Wire.available()) {
       Wire.read();
     }

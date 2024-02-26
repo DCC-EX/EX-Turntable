@@ -32,93 +32,87 @@ void setup() {
   // Run startup configuration
   startupConfiguration();
 
+  // Set up the stepper driver
+  setupStepperDriver();
+
   // If we're not sensor testing, start Wire()
-#ifndef SENSOR_TESTING
-  setupWire();
-#endif
+  if (!sensorTesting) setupWire();
 
   // Display EX-Turntable configuration
   displayTTEXConfig();
-
-  // Set up the stepper driver
-  setupStepperDriver();
 }
 
 void loop() {
-#ifdef SENSOR_TESTING
 // If we're only testing sensors, don't do anything else.
-  bool testHomeSensorState = getHomeState();
-  if (testHomeSensorState != homeSensorState) {
-    if (testHomeSensorState == HOME_SENSOR_ACTIVE_STATE) {
-      Serial.println(F("Home sensor ACTIVATED"));
-    } else {
-      Serial.println(F("Home sensor DEACTIVATED"));
+  if (sensorTesting) {
+    bool testHomeSensorState = getHomeState();
+    if (testHomeSensorState != homeSensorState) {
+      if (testHomeSensorState == HOME_SENSOR_ACTIVE_STATE) {
+        Serial.println(F("Home sensor ACTIVATED"));
+      } else {
+        Serial.println(F("Home sensor DEACTIVATED"));
+      }
+      homeSensorState = testHomeSensorState;
     }
-    homeSensorState = testHomeSensorState;
-  }
-  getHomeState();
+    getHomeState();
 
 #if TURNTABLE_EX_MODE == TRAVERSER
-  bool testLimitSensorState = getLimitState();
-  if (testLimitSensorState != limitSensorState) {
-    if (testLimitSensorState == LIMIT_SENSOR_ACTIVE_STATE) {
-      Serial.println(F("Limit sensor ACTIVATED"));
-    } else {
-      Serial.println(F("Limit sensor DEACTIVATED"));
+    bool testLimitSensorState = getLimitState();
+    if (testLimitSensorState != limitSensorState) {
+      if (testLimitSensorState == LIMIT_SENSOR_ACTIVE_STATE) {
+        Serial.println(F("Limit sensor ACTIVATED"));
+      } else {
+        Serial.println(F("Limit sensor DEACTIVATED"));
+      }
+      limitSensorState = testLimitSensorState;
     }
-    limitSensorState = testLimitSensorState;
-  }
 #endif
-
-#else
-
+  } else {
 #if TURNTABLE_EX_MODE == TRAVERSER
 // If we hit our limit switch when not calibrating, stop!
-  if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < 0) {
-    Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
-    if (!homed) {
-      homed = 1;
+    if (getLimitState() == LIMIT_SENSOR_ACTIVE_STATE && !calibrating && stepper.isRunning() && stepper.targetPosition() < 0) {
+      Serial.println(F("ALERT! Limit sensor activitated, halting stepper"));
+      if (!homed) {
+        homed = 1;
+      }
+      stepper.stop();
+      stepper.setCurrentPosition(stepper.currentPosition());
     }
-    stepper.stop();
-    stepper.setCurrentPosition(stepper.currentPosition());
-  }
 
 // If we hit our home switch when not homing, stop!
-  if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning() && stepper.distanceToGo() > 0) {
-    Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
-    stepper.stop();
-    stepper.setCurrentPosition(0);
-  }
+    if (getHomeState() == HOME_SENSOR_ACTIVE_STATE && homed && !calibrating && stepper.isRunning() && stepper.distanceToGo() > 0) {
+      Serial.println(F("ALERT! Home sensor activitated, halting stepper"));
+      stepper.stop();
+      stepper.setCurrentPosition(0);
+    }
 #endif
 
 // If we haven't successfully homed yet, do it.
-  if (homed == 0) {
-    moveHome();
-  }
+    if (homed == 0) {
+      moveHome();
+    }
 
 // If flag is set for calibrating, do it.
-  if (calibrating) {
-    calibration();
-  }
+    if (calibrating) {
+      calibration();
+    }
 
 // Process the stepper object continuously.
-  stepper.run();
+    stepper.run();
 
 // Process our LED.
-  processLED();
+    processLED();
 
 // If disabling on idle is enabled, disable the stepper.
 #if defined(DISABLE_OUTPUTS_IDLE)
-  if (stepper.isRunning() != lastRunningState) {
-    lastRunningState = stepper.isRunning();
-    if (!lastRunningState) {
-      stepper.disableOutputs();
+    if (stepper.isRunning() != lastRunningState) {
+      lastRunningState = stepper.isRunning();
+      if (!lastRunningState) {
+        stepper.disableOutputs();
+      }
     }
+#endif
   }
-#endif
-
-// Receive and process and serial input for test commands.
+  // Receive and process and serial input for test commands.
   processSerialInput();
-
-#endif
 }

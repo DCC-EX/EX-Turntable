@@ -18,7 +18,6 @@
 #define ULN2003_HALF_CCW AccelStepper(AccelStepper::HALF4WIRE, A0, A2, A1, A3)
 #define ULN2003_FULL_CW AccelStepper(AccelStepper::FULL4WIRE, A3, A1, A2, A0)
 #define ULN2003_FULL_CCW AccelStepper(AccelStepper::FULL4WIRE, A0, A2, A1, A3)
-#define A4988 AccelStepper(AccelStepper::DRIVER, A0, A1, A2)
-#define A4988_INV AccelStepper(AccelStepper::DRIVER, A0, A1, A2, UNUSED_PIN, true, true)
+#define A4988 AccelStepper(AccelStepper::DRIVER, A0, A1)
 
 #endif

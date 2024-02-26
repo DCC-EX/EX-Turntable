@@ -39,6 +39,8 @@ extern long fullTurnSteps;
 extern long phaseSwitchStartSteps;
 extern long phaseSwitchStopSteps;
 extern long lastTarget;
+extern bool homeSensorState;
+extern bool limitSensorState;
 
 void startupConfiguration();
 void setupStepperDriver();

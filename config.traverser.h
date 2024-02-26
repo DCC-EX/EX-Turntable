@@ -22,6 +22,7 @@
 //  Enable sensor testing only, prevents all Turntable-EX operations.
 //  Uncomment this line to disable all normal Turntable-EX operations in order to test
 //  and validate that homing and limit sensors activate and deactivate correctly.
+//  Note that you can enable sensor testing interactively in the serial console with <T>
 // 
 // #define SENSOR_TESTING
 
@@ -58,6 +59,7 @@
 //  Refer to the documentation for the full explanation on phase switching, and when
 //  it is recommended to change these options.
 // 
+// #define PHASE_SWITCHING AUTO
 #define PHASE_SWITCHING MANUAL
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -77,24 +79,37 @@
 //  Define the stepper controller in use according to those available below, refer to the
 //  documentation for further details on which to select for your application.
 // 
-//  ULN2003_HALF_CW     : ULN2003 in half step mode, clockwise homing/calibration
-//  ULN2003_HALF_CCW    : ULN2003 in half step mode, counter clockwise homing/calibration
-//  ULN2003_FULL_CW     : ULN2003 in full step mode, clockwise homing/calibration
-//  ULN2003_FULL_CCW    : ULN2003 in full step mode, counter clockwise homing/calibration
-//  TWO_WIRE            : Two wire drivers (eg. A4988, DRV8825)
-//  TWO_WIRE_INV        : Two wire drivers (eg. A4988, DRV8825), with enable pin inverted
+//  ULN2003_HALF_CW   : ULN2003 in half step mode, clockwise
+//  ULN2003_HALF_CCW  : ULN2003 in half step mode, counter clockwise
+//  ULN2003_FULL_CW   : ULN2003 in full step mode, clockwise
+//  ULN2003_FULL_CCW  : ULN2003 in full step mode, counter clockwise
+//  A4988             : Two wire drivers (eg. A4988, DRV8825, TMC2208)
 // 
 //  NOTE: If you are using a different controller than those already defined, refer to
 //  the documentation to define the appropriate configuration variables. Note there are
 //  some controllers that are pin-compatible with an existing defined controller, and
 //  in those instances, no custom configuration would be required.
 // 
+
 #define STEPPER_DRIVER ULN2003_HALF_CW
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
-// #define STEPPER_DRIVER TWO_WIRE
-// #define STEPPER_DRIVER TWO_WIRE_INV
+// #define STEPPER_DRIVER A4988
+// 
+// When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
+// the direction pin. This is likely required when using a TMC2208. This has no effect on
+// ULN2003.
+// #define INVERT_DIRECTION
+// 
+// When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
+// the step pin. If so, uncomment this line. This has no effect on ULN2003.
+// #define INVERT_STEP
+// 
+// When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
+// the enable pin behaviour if you wish to have the stepper driver disabled when not moving.
+// This has no effect on ULN2003.
+// #define INVERT_ENABLE
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
@@ -113,6 +128,15 @@
 #define STEPPER_GEARING_FACTOR 1
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  If dealing with steppers that have a lot of slop, it can be beneficial to force
+//  rotating in one direction only. Enable one (and one only) of the below options if
+//  a single rotation direction is required.
+//  NOTE this does not apply in TRAVERSER mode.
+//
+//  #define ROTATE_FORWARD_ONLY
+//  #define ROTATE_REVERSE_ONLY
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
 // 
 //  The LED will alternative on/off for these durations.
@@ -126,6 +150,7 @@
 //  stepper drivers and motors.
 // 
 //  Enable debug outputs if required during troubleshooting.
+//  Note you can enable debug output interactively in the serial console with <D>
 // 
 // #define DEBUG
 // 
@@ -137,7 +162,7 @@
 //  Define the minimum number of steps the turntable needs to move before the homing sensor
 //  deactivates, which is required during the calibration sequence. For high step count
 //  setups, this may need to be increased.
-// #define HOME_SENSITIVITY 150
+// #define HOME_SENSITIVITY 300
 // 
 //  Override the step count determined by automatic calibration by uncommenting the line
 //  below, and manually defining a specific step count.
