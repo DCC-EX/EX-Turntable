@@ -508,6 +508,7 @@ void setExtra(uint8_t activity) {
   case 17:
     digitalWrite(EXTRA_OUTPUT_PIN_4, LOW);
     break;
+    
     default:
     break;
   }  
