@@ -93,7 +93,7 @@
 //  in those instances, no custom configuration would be required.
 // 
 
-//#define STEPPER_DRIVER ULN2003_HALF_CW
+#define STEPPER_DRIVER ULN2003_HALF_CW
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
