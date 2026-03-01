@@ -14,10 +14,19 @@
 
 #define FULLSTEPS 4096
 
+/*
+ * RKS left these as original only added #ifndef to have A4988 only for RT_EX_TURNTABLE
+ */
+
+
+#ifndef USE_RT_EX_TURNTABLE
 #define ULN2003_HALF_CW AccelStepper(AccelStepper::HALF4WIRE, A3, A1, A2, A0)
 #define ULN2003_HALF_CCW AccelStepper(AccelStepper::HALF4WIRE, A0, A2, A1, A3)
 #define ULN2003_FULL_CW AccelStepper(AccelStepper::FULL4WIRE, A3, A1, A2, A0)
 #define ULN2003_FULL_CCW AccelStepper(AccelStepper::FULL4WIRE, A0, A2, A1, A3)
 #define A4988 AccelStepper(AccelStepper::DRIVER, A0, A1)
+#else
+#define A4988 AccelStepper(AccelStepper::DRIVER, STEPPER_STEP_PIN, STEPPER_DIR_PIN)  
+#endif
 
 #endif

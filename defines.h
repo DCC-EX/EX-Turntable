@@ -20,6 +20,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+
 // Ensure AUTO and MANUAL phase switching has a value to test.
 #define AUTO 1
 #define MANUAL 0
@@ -31,6 +32,9 @@
 // If we haven't got a custom config.h, use the example.
 #if __has_include ( "config.h")
   #include "config.h"
+  #ifndef TURNTABLE_EX_MODE
+  #error Your config.h must include a TURNTABLE_EX_MODE definition. If you see this warning in spite not having a config.h, you have a buggy preprocessor and must copy config.example.h to config.h
+  #endif
 #else
   #warning config.h not found. Using defaults from config.example.h
   #include "config.example.h"
@@ -87,5 +91,66 @@
 #if (TURNTABLE_EX_MODE == TRAVERSER && defined(ROTATE_FORWARD_ONLY)) || (TURNTABLE_EX_MODE == TRAVERSER && defined(ROTATE_REVERSE_ONLY))
 #error Traverser mode cannot operate with ROTATE_FORWARD_ONLY or ROTATE_REVERSE_ONLY
 #endif
+
+
+/*
+ *  Defines added for RT_EX_Turntable all in one board.
+ */
+
+
+#ifdef USE_RT_EX_TURNTABLE
+
+#ifndef ESP32
+
+#define LIMIT_SENSOR_PIN 8      // changed from D2 to allow DCC input
+#define HOME_SENSOR_PIN 5
+#define RELAY_PIN 4
+#define LED_PIN 6
+#define ACC_PIN 7
+
+#define STEPPER_STEP_PIN A0
+#define STEPPER_DIR_PIN A1
+#define STEPPER_ENABLE_PIN A2
+
+#define EXTRA_OUTPUT_PIN_1 9
+#define EXTRA_OUTPUT_PIN_2 10
+#define EXTRA_OUTPUT_PIN_3 11
+#define EXTRA_OUTPUT_PIN_4 12
+
+#else
+                                 // this is for ESP32
+
+#define LIMIT_SENSOR_PIN 25
+#define HOME_SENSOR_PIN 26
+#define RELAY_PIN 27
+#define LED_PIN 32
+#define ACC_PIN 33
+
+#define STEPPER_STEP_PIN 17
+#define STEPPER_DIR_PIN 16
+#define STEPPER_ENABLE_PIN 18 
+
+#define EXTRA_OUTPUT_PIN_1 14
+#define EXTRA_OUTPUT_PIN_2 13
+#define EXTRA_OUTPUT_PIN_3 15
+#define EXTRA_OUTPUT_PIN_4 19
+
+#endif
+
+
+#else
+
+#define LIMIT_SENSOR_PIN 2      // this is the original configuration
+#define HOME_SENSOR_PIN 5
+#define RELAY_1_PIN 3
+#define RELAY_2_PIN 4
+#define LED_PIN 6
+#define ACC_PIN 7
+
+#define STEPPER_ENABLE_PIN A2
+
+
+#endif
+
 
 #endif

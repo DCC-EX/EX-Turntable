@@ -4,6 +4,7 @@
  *  This is the configuration file for Turntable-EX.
  */
 
+
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define a valid (and free) I2C address, 0x60 is the default.
 // 
@@ -32,6 +33,7 @@
 //  HIGH = When activated, the input is pulled up (typically 5V).
 // 
 #define HOME_SENSOR_ACTIVE_STATE LOW
+//#define HOME_SENSOR_ACTIVE_STATE HIGH
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  REQUIRED FOR TRAVERSER MODE ONLY
@@ -91,7 +93,7 @@
 //  in those instances, no custom configuration would be required.
 // 
 
-#define STEPPER_DRIVER ULN2003_HALF_CW
+//#define STEPPER_DRIVER ULN2003_HALF_CW
 // #define STEPPER_DRIVER ULN2003_HALF_CCW
 // #define STEPPER_DRIVER ULN2003_FULL_CW
 // #define STEPPER_DRIVER ULN2003_FULL_CCW
@@ -100,16 +102,16 @@
 // When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
 // the direction pin. This is likely required when using a TMC2208. This has no effect on
 // ULN2003.
-// #define INVERT_DIRECTION
+//#define INVERT_DIRECTION
 // 
 // When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
 // the step pin. If so, uncomment this line. This has no effect on ULN2003.
-// #define INVERT_STEP
+//#define INVERT_STEP
 // 
 // When using a two wire driver (eg. A4988, DRV8825, TMC2208), it may be necessary to invert
 // the enable pin behaviour if you wish to have the stepper driver disabled when not moving.
 // This has no effect on ULN2003.
-// #define INVERT_ENABLE
+//#define INVERT_ENABLE
 
 /////////////////////////////////////////////////////////////////////////////////////
 //  Define the various stepper configuration items below if the defaults don't suit
@@ -173,3 +175,35 @@
 //  In TRAVERSER mode, default is 10ms as these would typically use mechanical switches.
 //  In TURNTABLE mode, default is 0ms as these would typically use hall effect sensors.
 // #define DEBOUNCE_DELAY 10
+
+
+/*
+ *  Defines added for RT_EX_Turntable all in one board.
+ */
+
+
+// uncomment this to use default settings for RT_EX-Turntable all in on board
+//#define USE_RT_EX_TURNTABLE
+
+
+#ifdef USE_RT_EX_TURNTABLE
+
+// Set the stepper driver to two wire driver on RT_EX-TURNTABLE board
+
+#ifdef STEPPER_DRIVER
+#undef STEPPER_DRIVER
+#endif
+
+#define STEPPER_DRIVER A4988
+
+// TMC2209 needs the enable pin inverted.
+#define INVERT_ENABLE
+
+// This allows use of 1/64 and 1/128 microsteps
+#define SANITY_STEPS 30000
+
+// This allows moving far enough during calibration from home when using 1/64 and 1/128 microsteps
+#define HOME_SENSITIVITY 600
+
+#endif
+

@@ -1,7 +1,13 @@
 #ifndef version_h
 #define version_h
 
-#define VERSION "0.7.0"
+#define VERSION "0.8.0"
+
+// 0.8.0:
+//  - add defines for RT_EX_Turntable single board
+//  - add ESP32 compile
+//  - 
+
 
 // 0.7.0:
 //  - Fix bug where enabling sensor testing prevents compiling

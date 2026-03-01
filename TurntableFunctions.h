@@ -57,4 +57,8 @@ void initiateCalibration();
 void setLEDActivity(uint8_t activity);
 void setAccessory(bool state);
 
+#ifdef USE_RT_EX_TURNTABLE
+void setExtra(uint8_t activity);
+#endif
+
 #endif
