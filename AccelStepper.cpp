@@ -4,6 +4,7 @@
 // $Id: AccelStepper.cpp,v 1.24 2020/04/20 00:15:03 mikem Exp mikem $
 
 #include "AccelStepper.h"
+#include "config.h"
 
 #if 0
 // Some debugging assistance
