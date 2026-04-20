@@ -185,7 +185,8 @@ unsigned long AccelStepper::computeNewSpeed()
 boolean AccelStepper::run()
 {
     if (runSpeed())
-	computeNewSpeed();
+        computeNewSpeed();
+    processDisableOutputs();
     return _speed != 0.0 || distanceToGo() != 0;
 }
 
@@ -566,11 +567,36 @@ void AccelStepper::step8(long step)
     }
 }
     
-// Prevents power consumption on the outputs
-void    AccelStepper::disableOutputs()
-{   
-    if (! _interface) return;
 
+// Request outputs be disabled after delay
+void AccelStepper::disableOutputs()
+{
+#ifndef DISABLE_OUTPUT_TIMEOUT
+    internalDisableOutputs();
+#else
+    // Start the disable timer if not already pending
+    if (!_disablePending) {
+        _disablePending = true;
+        _disableStartTime = millis();
+    }
+#endif
+}
+
+// Call this periodically (e.g. in loop or run()) to process pending disables
+void AccelStepper::processDisableOutputs()
+{
+    if (_disablePending) {
+        if (millis() - _disableStartTime >= DISABLE_DELAY_MS) {
+           internalDisableOutputs();
+            _disablePending = false;
+        }
+    }
+}
+
+void AccelStepper::internalDisableOutputs()
+{
+    // Actually disable outputs now
+    if (!_interface) return;
     setOutputPins(0); // Handles inversion automatically
     if (_enablePin != 0xff)
     {
@@ -579,10 +605,13 @@ void    AccelStepper::disableOutputs()
     }
 }
 
-void    AccelStepper::enableOutputs()
+void AccelStepper::enableOutputs()
 {
-    if (! _interface) 
-	return;
+    // Cancel any pending disable
+    _disablePending = false;
+
+    if (! _interface)
+        return;
 
     pinMode(_pin[0], OUTPUT);
     pinMode(_pin[1], OUTPUT);
