@@ -295,10 +295,9 @@ void reverseTurntable(uint8_t phaseSwitch){
     stepper.enableOutputs();
     stepper.moveTo(newTarget);
     lastTarget = newTarget;
-    if (debug) {
-      Serial.print(F("reverseTurntable: Rotating to "));
-      Serial.println(newTarget);
-    }
+    lastStep = newTarget;
+    Serial.print(F("Reverse Turntable: Rotating to "));
+    Serial.println(newTarget);
 }
 
 // Function to set phase.
