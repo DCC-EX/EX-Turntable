@@ -403,8 +403,10 @@ void receiveEvent(int received) {
     } else if ((activity >= 10) && (activity <= 17)) {
       setExtra(activity);
 #endif
-
-   } else {
+    } else if (activity == 18 && !stepper.isRunning() && !calibrating) {
+      reverseTurntable(activity);
+    
+    } else {
       if (debug) {
         Serial.print(F("DEBUG: Invalid step count or activity provided, or turntable still moving: "));
         Serial.print(steps);

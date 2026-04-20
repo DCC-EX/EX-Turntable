@@ -283,6 +283,24 @@ void moveToPosition(long steps, uint8_t phaseSwitch) {
   }
 }
 
+void reverseTurntable(uint8_t phaseSwitch){
+    // Calculate new target 180 degrees from lastTarget
+    long newTarget = lastTarget + halfTurnSteps;
+    if (newTarget >= fullTurnSteps) {
+      newTarget -= fullTurnSteps;
+    }
+    // Set phase if needed
+    setPhase(phaseSwitch);
+    // Move to new target
+    stepper.enableOutputs();
+    stepper.moveTo(newTarget);
+    lastTarget = newTarget;
+    if (debug) {
+      Serial.print(F("reverseTurntable: Rotating to "));
+      Serial.println(newTarget);
+    }
+}
+
 // Function to set phase.
 void setPhase(uint8_t phase) {
 #if RELAY_ACTIVE_STATE == HIGH
