@@ -557,6 +557,14 @@ public:
     /// Virtual destructor to prevent warnings during delete
     virtual ~AccelStepper() {};
 protected:
+    // For delayed disableOutputs
+    bool _disablePending = false;
+    unsigned long _disableStartTime = 0;
+    static const unsigned long DISABLE_DELAY_MS = 60000; // 1 minute
+    // Call periodically (e.g. in loop or run()) to process pending disables
+    void    processDisableOutputs();
+    // Call to actually disable outputs
+    void    internalDisableOutputs();
 
     /// \brief Direction indicator
     /// Symbolic names for the direction the motor is turning
