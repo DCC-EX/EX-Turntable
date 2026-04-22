@@ -295,6 +295,15 @@ void displayTTEXConfig() {
   Serial.print(F("STEPPER_ACCELERATION "));
   Serial.println(STEPPER_ACCELERATION);
 
+#if defined(DISABLE_OUTPUTS_IDLE)
+  Serial.println(F("DISABLE_OUTPUTS_IDLE enabled"));
+#if defined(DISABLE_OUTPUT_TIMEOUT)
+  Serial.print(F("DISABLE_OUTPUT_TIMEOUT "));
+  Serial.print(DISABLE_OUTPUT_TIMEOUT);
+  Serial.println(F(" Seconds"));
+#endif
+#endif
+
   if (debug) {
     Serial.print(F("DEBUG: maxSpeed()|acceleration(): "));
     Serial.print(stepper.maxSpeed());
@@ -434,4 +443,37 @@ void requestEvent() {
     stepperStatus = 0;
   }
   Wire.write(stepperStatus);
+}
+
+// Stepper disable timeout state
+#ifdef DISABLE_OUTPUT_TIMEOUT
+static bool _disablePending = false;
+static unsigned long _disableStartTime = 0;
+#endif
+
+// Schedule stepper outputs to be disabled. If DISABLE_OUTPUT_TIMEOUT is defined,
+// the disable is deferred; otherwise it happens immediately.
+void scheduleStepperDisable() {
+#ifdef DISABLE_OUTPUT_TIMEOUT
+  if (!_disablePending) {
+    _disablePending = true;
+    _disableStartTime = millis();
+  }
+#else
+  stepper.disableOutputs();
+#endif
+}
+
+// Call this periodically in the main loop to process any pending deferred disable.
+void processStepperDisable() {
+#ifdef DISABLE_OUTPUT_TIMEOUT
+  if (_disablePending) {
+    if (stepper.isRunning()) {
+      _disablePending = false;
+    } else if (millis() - _disableStartTime >= (DISABLE_OUTPUT_TIMEOUT * 1000UL)) {
+      stepper.disableOutputs();
+      _disablePending = false;
+    }
+  }
+#endif
 }

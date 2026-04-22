@@ -47,5 +47,7 @@ void serialCommandV();
 void displayTTEXConfig();
 void receiveEvent(int received);
 void requestEvent();
+void scheduleStepperDisable();
+void processStepperDisable();
 
 #endif

@@ -118,7 +118,10 @@
 //
 //  Disable the stepper controller when idling, comment out to leave on. Note that this
 //  is handy to prevent controllers overheating, so this is a recommended setting.
+//  set DISABLE_OUTPUT_TIMEOUT to disable the steppers after x seconds of no use.
 #define DISABLE_OUTPUTS_IDLE
+#define DISABLE_OUTPUT_TIMEOUT 60
+
 // 
 //  Define the acceleration and speed settings.
 #define STEPPER_MAX_SPEED 200     // Maximum possible speed the stepper will reach

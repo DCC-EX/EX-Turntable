@@ -108,9 +108,10 @@ void loop() {
     if (stepper.isRunning() != lastRunningState) {
       lastRunningState = stepper.isRunning();
       if (!lastRunningState) {
-        stepper.disableOutputs();
+        scheduleStepperDisable();
       }
     }
+    processStepperDisable();
 #endif
   }
   // Receive and process and serial input for test commands.
