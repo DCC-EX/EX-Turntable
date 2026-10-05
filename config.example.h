@@ -139,6 +139,14 @@
 //  #define ROTATE_REVERSE_ONLY
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  If the home sensor may be active when the turntable powers on (e.g. the bridge
+//  rests on the sensor), enable this option to rotate away from the sensor before
+//  beginning the normal homing sequence. This ensures homing always triggers on a
+//  clean leading edge of the sensor.
+//
+// #define ROTATE_BEFORE_HOME
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  Define the LED blink rates for fast and slow blinking in milliseconds.
 // 
 //  The LED will alternative on/off for these durations.

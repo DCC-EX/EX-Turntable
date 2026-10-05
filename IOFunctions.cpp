@@ -289,6 +289,9 @@ void displayTTEXConfig() {
 #if defined(INVERT_ENABLE)
   Serial.println(F("INVERT_ENABLE enabled"));
 #endif
+#if defined(ROTATE_BEFORE_HOME)
+  Serial.println(F("ROTATE_BEFORE_HOME enabled"));
+#endif
 
   Serial.print(F("STEPPER_MAX_SPEED "));
   Serial.println(STEPPER_MAX_SPEED);

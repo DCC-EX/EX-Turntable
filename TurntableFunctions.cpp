@@ -176,6 +176,33 @@ void setupStepperDriver() {
 // Function to find the home position.
 void moveHome() {
   setPhase(0);
+#if defined(ROTATE_BEFORE_HOME)
+  static bool _rotateBeforeHomeDone = false;
+  static bool _clearingHome = false;
+  // Phase 1: sensor active on entry — rotate until it deactivates.
+  if (!_rotateBeforeHomeDone && !_clearingHome && !stepper.isRunning() && getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
+    if (!stepper.isRunning()) {
+      Serial.println(F("Home sensor active at startup, rotating clear before homing"));
+      stepper.enableOutputs();
+      stepper.move(sanitySteps);
+    }
+    _clearingHome = true;
+    return;
+  }
+  // Phase 2: still clearing — wait for sensor to deactivate.
+  if (_clearingHome) {
+    if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
+      return; // still on sensor, keep rotating
+    }
+    // Sensor has cleared — stop current move and let normal homing start fresh.
+    _clearingHome = false;
+    _rotateBeforeHomeDone = true;
+    stepper.stop();
+    lastTarget = sanitySteps; // reset so normal homing won't see a false failure
+    Serial.println(F("Sensor cleared, starting homing"));
+    return; // let stepper decelerate; next call starts normal homing
+  }
+#endif
   if (getHomeState() == HOME_SENSOR_ACTIVE_STATE) {
     stepper.stop();
 #if defined(DISABLE_OUTPUTS_IDLE)
