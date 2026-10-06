@@ -157,6 +157,13 @@
 #define LED_SLOW 500
 
 /////////////////////////////////////////////////////////////////////////////////////
+//  Define a number of seconds after boot before the turntable starts
+// 
+//  undefine to enable and set the number of seconds.
+// #define STARTUP_DELAY 5
+
+
+/////////////////////////////////////////////////////////////////////////////////////
 //  ADVANCED OPTIONS
 //  In normal circumstances, the settings below should not need to be adjusted unless
 //  requested by support ticket, or if Tinkerers or Engineers are working with alternative

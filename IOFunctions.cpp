@@ -234,8 +234,6 @@ void serialCommandV() {
 // Function to display the defined stepper motor config.
 void displayTTEXConfig() {
   // Basic setup, display what this is.
-  Serial.begin(115200);
-  while(!Serial);
   Serial.println(F("License GPLv3 fsf.org (c) dcc-ex.com"));
   Serial.print(F("EX-Turntable version "));
   Serial.println(VERSION);

@@ -29,6 +29,15 @@
 bool lastRunningState;   // Stores last running state to allow turning the stepper off after moves.
 
 void setup() {
+  Serial.begin(115200);
+  while(!Serial);
+
+  #ifdef STARTUP_DELAY
+    Serial.print(F("Startup Delay: "));
+    Serial.print(STARTUP_DELAY);
+    Serial.println(" Seconds.");
+    delay(STARTUP_DELAY * 1000);
+  #endif
   // Run startup configuration
   startupConfiguration();
 
